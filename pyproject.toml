@@ -1,0 +1,16 @@
+[project]
+name = "arcsearch"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "defusedxml>=0.7.1",
+    "ipykernel>=7.3.0",
+    "meilisearch>=0.43.0",
+    "phonenumbers>=9.0.34",
+    "prek>=0.4.10",
+    "pydantic>=2.13.4",
+    "pydantic-extra-types>=2.11.1",
+    "vobject>=0.9.9",
+]

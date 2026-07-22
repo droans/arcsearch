@@ -1,0 +1,99 @@
+# The contents of this file is based on https://github.com/home-assistant/core/blob/dev/pyproject.toml
+
+# All the ones without a comment were the ones that are currently violated
+# by the codebase. The plan is to fix them all (when sensible) and then enable them.
+exclude = ["**/*.ipynb"]
+fix = true
+line-length = 100
+show-fixes = true
+target-version = "py311"
+
+
+[format]
+line-ending = "lf"
+
+[lint]
+select = ["ALL"]
+ignore = [
+    "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed in {name}
+    "DTZ001",  # `datetime.datetime()` called without a `tzinfo` argument
+    "DTZ002",  # `datetime.datetime.today()` used
+    "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
+    "DTZ006",  # `datetime.datetime.fromtimestamp()` called without a `tz` argument
+    "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
+    "FBT001",  # Boolean positional arg in function definition
+    "FBT002",  # Boolean default value in function definition
+    "ANN003", # Missing type annotation for **kw
+    "D401",    # First line of docstring should be in imperative mood
+    "E501",    # line too long
+    "N999",    # Invalid Module Name
+    "PTH123",  # `open()` should be replaced by `Path.open()`
+    "S101",    # Use of assert detected
+]
+
+
+[lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+
+[lint.isort]
+known-first-party = ["GrossOrders"]
+
+[lint.mccabe]
+max-complexity = 25
+
+[lint.per-file-ignores]
+"tests/*.py" = [
+    "ARG001", # Unused function argument
+    "D100",    # Missing docstring in public module
+    "D103",    # Missing docstring in public function
+    "DTZ001",  # The use of `datetime.datetime()` without `tzinfo`
+    "DTZ002",  # `datetime.datetime.today()` used
+    "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
+    "FBT003",  # Boolean positional value in function call
+    "FIX002",  # Line contains TODO, consider resolving the issue
+    "G004",    # Logging statement uses f-string
+    "PT007",   # Wrong values type in `@pytest.mark.parametrize` expected `list` of
+    "PTH123",  # `open()` should be replaced by `Path.open()`
+    "S101",    # Use of assert detected
+    "S311",    # Standard pseudo-random generators are not suitable for cryptographic
+    "SLF001",  # Private member accessed
+    "TD002",   # Missing author in TODO; try: `# TODO(<author_name>): ...` or `# TODO
+    "TD003",   # Missing issue link on the line following this TODO
+]
+"tests/**/conftest.py" = [
+    "ANN201" # Missing return type annotation for public function
+]
+"tests_frontend/*.py" = [
+    "ARG001", # Unused function argument
+    "D100",    # Missing docstring in public module
+    "D103",    # Missing docstring in public function
+    "DTZ001",  # The use of `datetime.datetime()` without `tzinfo`
+    "DTZ002",  # `datetime.datetime.today()` used
+    "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
+    "FBT003",  # Boolean positional value in function call
+    "FIX002",  # Line contains TODO, consider resolving the issue
+    "G004",    # Logging statement uses f-string
+    "PT007",   # Wrong values type in `@pytest.mark.parametrize` expected `list` of
+    "PTH123",  # `open()` should be replaced by `Path.open()`
+    "S101",    # Use of assert detected
+    "S311",    # Standard pseudo-random generators are not suitable for cryptographic
+    "SLF001",  # Private member accessed
+    "TD002",   # Missing author in TODO; try: `# TODO(<author_name>): ...` or `# TODO
+    "TD003",   # Missing issue link on the line following this TODO
+]
+"tests_frontend/**/conftest.py" = [
+    "ANN201" # Missing return type annotation for public function
+]
+
+[lint.pydocstyle]
+convention = "pep257"
+
+[lint.pylint]
+max-args = 10
+max-branches = 25
+max-returns = 15
+max-statements = 50
+
+[lint.pyupgrade]
+keep-runtime-typing = true
