@@ -28,7 +28,7 @@ ignore = [
     "E501",    # line too long
     "N999",    # Invalid Module Name
     "PTH123",  # `open()` should be replaced by `Path.open()`
-    "S101",    # Use of assert detected
+    "S101",    # Use of assert detected,
 ]
 
 
@@ -43,6 +43,9 @@ known-first-party = ["GrossOrders"]
 max-complexity = 25
 
 [lint.per-file-ignores]
+"src/indexers/gmail/models.py" = [
+    "N815"
+]
 "tests/*.py" = [
     "ARG001", # Unused function argument
     "D100",    # Missing docstring in public module

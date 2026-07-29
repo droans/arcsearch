@@ -1,0 +1,1 @@
+"""Email indexer functions."""
