@@ -8,6 +8,8 @@ from typing import cast
 
 import defusedxml.ElementTree
 
+from src.util.contacts import parse_phone_number
+
 from .const import (
     CONTENT_TYPE_MESSAGE,
     AddressType,
@@ -44,6 +46,10 @@ class ExportSMSMessages:
         """Initialize class."""
         self._sms_config = sms_config
         self._personal_number = sms_config.personal_phone_numer
+        self._parsed_personal_number = parse_phone_number(
+            sms_config.personal_phone_numer,
+            sms_config.region,
+        )
         self._region = sms_config.region
         self._region_code = sms_config.region_code
         self._conv_parser = ExportSMSConversations(sms_config)
@@ -84,7 +90,7 @@ class ExportSMSMessages:
             sender = cast("str", self.find_group_msg_sender(xml_model.addrs) or "")
         else:
             direction = "sent"
-            sender = self._personal_number.replace("+1", "")
+            sender = self._parsed_personal_number
         attachments, message = self.parse_parts_and_save_imgs(
             attachment_save_dir=attachment_save_dir,
             xml_parts=xml_model.parts,
@@ -115,7 +121,7 @@ class ExportSMSMessages:
             sender = xml_model.address.replace("1+", "")
             direction = "received"
         else:
-            sender = self._personal_number.replace("+1", "")
+            sender = self._parsed_personal_number
             direction = "sent"
         message = xml_model.body
         date = xml_model.readable_date
@@ -144,7 +150,7 @@ class ExportSMSMessages:
         result = []
         for xml_model in xml_models:
             if isinstance(xml_model, XMLSMSModel):
-                participants = {self._personal_number.replace("+1", ""), xml_model.address}
+                participants = {self._parsed_personal_number, xml_model.address}
                 conv_id = generate_conversation_id(participants)
                 parsed_model = self.parse_sms_message(
                     conv_id=conv_id,
@@ -227,7 +233,7 @@ class ExportSMSMessages:
         """Find the sender in a group message."""
         for addr in addrs:
             if addr.type == AddressType.From:
-                return addr.address
+                return self._conv_parser.safe_parse_address(addr.address)
         return None
 
 

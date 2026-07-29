@@ -6,6 +6,8 @@ from pathlib import Path
 
 from defusedxml import ElementTree
 
+from src.util.contacts import is_phone_number, parse_phone_number
+
 from .models import (
     ConversationModel,
     SMSConfig,
@@ -28,14 +30,23 @@ class ExportSMSConversations:
     ) -> None:
         """Initialize class."""
         self._sms_config = sms_config
-        self._personal_number = sms_config.personal_phone_numer
+        self._parsed_personal_number = parse_phone_number(
+            sms_config.personal_phone_numer,
+            sms_config.region,
+        )
         self._region = sms_config.region
         self._region_code = sms_config.region_code
 
+    def safe_parse_address(self, address: str) -> str:
+        """Return parsed phone number if address is a phone number. Otherwise, return address."""
+        if is_phone_number(address, self._region):
+            return parse_phone_number(address, self._region)
+        return address
+
     def parse_sms_message_converation(self, xml_model: XMLSMSModel) -> ConversationModel:
         """Parse a SMS message to create the conversation element."""
-        address = xml_model.address.replace("+1", "")
-        recips = {address, self._personal_number.replace("+1", "")}
+        address = self.safe_parse_address(xml_model.address)
+        recips = {address, self._parsed_personal_number}
         conv_id = generate_conversation_id(recips)
         return ConversationModel(recipients=list(recips), conversation_id=conv_id)
 
@@ -47,12 +58,11 @@ class ExportSMSConversations:
         if not xml_model:
             logger.info(msg="parse_mms_message_conversation: No addresses found. Returning.")
             return None
-        recips = {self._personal_number.replace("+1", "")}
+        recips = {self._parsed_personal_number}
         for address in xml_model:
             addr = address.address
             if addr:
-                addr = addr.replace("+1", "")
-                recips.add(addr)
+                recips.add(self.safe_parse_address(addr))
         conv_id = generate_conversation_id(recips)
         return ConversationModel(recipients=list(recips), conversation_id=conv_id)
 
