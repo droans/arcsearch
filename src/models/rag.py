@@ -1,6 +1,6 @@
 """Models for RAG components."""
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, SecretStr
 
 
 class EmbedderSettings(BaseModel):
@@ -19,3 +19,6 @@ class EmbedderSettings(BaseModel):
 
 class MeilisearchConfig(BaseModel):
     """Model for Meilisearch config."""
+
+    url: HttpUrl
+    api_key: SecretStr | None = None
