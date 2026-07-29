@@ -1,7 +1,6 @@
 """Models for RAG components."""
 
-from googleapiclient.model import BaseModel
-from pydantic import HttpUrl
+from pydantic import BaseModel, HttpUrl
 
 
 class EmbedderSettings(BaseModel):

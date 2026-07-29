@@ -1,6 +1,7 @@
 """Models for indexer configuration."""
 
 from abc import ABC, abstractmethod
+from types import UnionType
 from typing import TYPE_CHECKING, Any, Callable, Type  # noqa: UP035
 
 from pydantic import BaseModel
@@ -19,6 +20,7 @@ class BaseIndexerConfigModel(BaseModel):
 
 
 class BaseMessageWithAttachmentConfig(
+    BaseModel,
     arbitrary_types_allowed=True,
 ):
     """Base model for indices with messages and attachments."""
@@ -59,7 +61,7 @@ class AddDocumentsKwargField(
     """Model for a single `kwarg` field."""
 
     # Type for argument
-    type: type[...]
+    type: UnionType | type
 
     # Default value to use
     default_value: Any = None

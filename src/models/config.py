@@ -1,6 +1,6 @@
 """Config Models."""
 
-from googleapiclient.model import BaseModel
+from pydantic import BaseModel
 
 from src.models.indices import BaseIndexerConfigModel
 from src.models.rag import MeilisearchConfig
