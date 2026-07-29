@@ -1,5 +1,5 @@
 """Exceptions."""
 
 
-class IndexRegistryEntryError(Exception):
-    """Exception from managing an index entry."""
+class IndexerRegistryEntryError(Exception):
+    """Exception from managing an indexer entry."""

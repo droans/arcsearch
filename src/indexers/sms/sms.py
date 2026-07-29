@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from src.models.indices import BaseIndexClass
+from src.models.indices import BaseIndexerClass
 
 from . import ExportSMSMessages, export_contacts
 from .const import (
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from meilisearch import Client
 
 
-class TextMessageEngine(BaseIndexClass):
+class TextMessageIndexer(BaseIndexerClass):
     """Engine managing interactions with the sms index and data."""
 
     def __init__(self, config: SMSConfig, meilisearch_client: "Client") -> None:

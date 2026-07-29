@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, BeforeValidator
 
-from src.models.indices import BaseMessageWithAttachmentConfig
+from src.models.indices import BaseIndexerConfigModel, BaseMessageWithAttachmentConfig
 
 from .const import AddressType, MessageBox, MessageType, SMSStatus, SMSType
 
@@ -233,7 +233,7 @@ class RCSModel(BaseMessageModel):
     images: list[MMSAttachmentModel]
 
 
-class SMSConfig(BaseMessageWithAttachmentConfig):
+class SMSConfig(BaseMessageWithAttachmentConfig, BaseIndexerConfigModel):
     """Model for SMS configuration."""
 
     type: Literal["sms"]

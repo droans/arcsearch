@@ -6,10 +6,10 @@ from .conversations import ExportSMSConversations
 from .messages import ExportSMSMessages, generate_conversation_id, generate_message_unique_id
 from .models import SMSConfig
 
-INDEX_CONFIG = SMSConfig
+INDEXER_CONFIG = SMSConfig
 
 __all__ = (
-    "INDEX_CONFIG",
+    "INDEXER_CONFIG",
     "REGISTRY_ENTRY",
     "ExportSMSConversations",
     "ExportSMSMessages",

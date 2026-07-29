@@ -1,4 +1,4 @@
-"""Models for index configuration."""
+"""Models for indexer configuration."""
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Callable, Type  # noqa: UP035
@@ -12,14 +12,13 @@ if TYPE_CHECKING:
     from meilisearch import Client
 
 
-class BaseIndexConfigModel(BaseModel):
-    """Base Model for index configuration."""
+class BaseIndexerConfigModel(BaseModel):
+    """Base Model for indexer configuration."""
 
     type: str
 
 
 class BaseMessageWithAttachmentConfig(
-    BaseIndexConfigModel,
     arbitrary_types_allowed=True,
 ):
     """Base model for indices with messages and attachments."""
@@ -29,13 +28,13 @@ class BaseMessageWithAttachmentConfig(
     save_attachment_type_prefixes: list[str] = DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES
 
 
-class BaseIndexClass(ABC):
-    """Base index class."""
+class BaseIndexerClass(ABC):
+    """Base indexer class."""
 
     @abstractmethod
     def __init__(
         self,
-        config: BaseIndexConfigModel,
+        config: BaseIndexerConfigModel,
         meilisearch_client: "Client",
     ) -> None:
         """Initialize class."""
@@ -76,31 +75,31 @@ class AddDocumentsKwargField(
     validate_func: Callable[[Any], bool] | None = None
 
 
-class IndexRegistryEntry(
+class IndexerRegistryEntry(
     BaseModel,
     arbitrary_types_allowed=True,
 ):
-    """Model for registering an index and its class."""
+    """Model for registering an indexer and its class."""
 
-    # Name used for index
-    index_name: str
+    # Name used for indexer
+    indexer_name: str
 
-    # Key identifying index type
-    index_type: str
+    # Key identifying indexer type
+    indexer_type: str
 
-    # Class used to manage index
-    index_class: Type[BaseIndexClass]  # noqa: UP006
+    # Class used to manage indexer
+    indexer_class: Type[BaseIndexerClass]  # noqa: UP006
 
     # Arguments to pass when adding documents
     add_documents_kwargs: dict[str, AddDocumentsKwargField] = {}
 
-    # Whether the index supports adding documents
+    # Whether the indexer supports adding documents
     supports_adding_documents: bool = True
 
-    # Whether the index supports creating indices
+    # Whether the indexer supports creating indices
     supports_creating_indices: bool = True
 
-    # Whether the index supports embedding
+    # Whether the indexer supports embedding
     supports_embedding: bool = True
 
     # Names for indices created by entry

@@ -3,9 +3,9 @@
 from enum import Enum, StrEnum
 from pathlib import Path
 
-from src.models.indices import AddDocumentsKwargField, IndexRegistryEntry
+from src.models.indices import AddDocumentsKwargField, IndexerRegistryEntry
 
-from .sms import TextMessageEngine
+from .sms import TextMessageIndexer
 
 RCS_CT_CLS = 135
 
@@ -70,10 +70,10 @@ ADD_DOCUMENTS_KWARGS = {
         validate_func=lambda path: Path(path).exists(),
     ),
 }
-REGISTRY_ENTRY = IndexRegistryEntry(
-    index_name="SMS",
-    index_type="sms",
-    index_class=TextMessageEngine,
+REGISTRY_ENTRY = IndexerRegistryEntry(
+    indexer_name="SMS",
+    indexer_type="sms",
+    indexer_class=TextMessageIndexer,
     add_documents_kwargs=ADD_DOCUMENTS_KWARGS,
     indices=[
         "sms",
