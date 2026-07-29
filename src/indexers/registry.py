@@ -2,9 +2,15 @@
 
 from typing import cast
 
-from src.exceptions import IndexerRegistryEntryError
+from meilisearch import Client
+
+from src.exceptions import IndexerRegistryEntryError, IndexRegistrationError
 from src.models import ConfigModel
-from src.models.indices import IndexerRegistryEntry
+from src.models.indices import (
+    BaseIndexerConfigModel,
+    IndexerRegistryEntry,
+    RegisteredIndexerRegistryEntry,
+)
 
 from . import sms
 
@@ -16,11 +22,18 @@ INDEXER_MODULES = [
 class IndexerRegistry:
     """Registry for indexer classes."""
 
-    def __init__(self, config: ConfigModel) -> None:
+    def __init__(
+        self,
+        config: ConfigModel,
+        meilisearch_client: Client,
+    ) -> None:
         """Initialize class."""
         self._config = config
-        self.indexer_entries: dict[str, IndexerRegistryEntry] = {}
+        self.all_indexer_entries: dict[str, IndexerRegistryEntry] = {}
         self.indices: dict[str, IndexerRegistryEntry] = {}
+        self.registered_indexers: dict[str, RegisteredIndexerRegistryEntry] = {}
+        self.registered_indicies: dict[str, RegisteredIndexerRegistryEntry] = {}
+        self._client = meilisearch_client
 
     def register_indices(self) -> None:
         """Register indices."""
@@ -39,15 +52,63 @@ class IndexerRegistry:
             entry = cast("IndexerRegistryEntry", entry)
             indexer_type = entry.indexer_type
 
-            if indexer_type in self.indexer_entries:
+            if indexer_type in self.all_indexer_entries:
                 msg = f"Indexer type {indexer_type} is already registered"
                 raise IndexerRegistryEntryError(msg)
 
-            indexers = entry.indices
+            indices = entry.indices
 
-            for indexer in indexers:
-                if indexer in self.indices:
-                    msg = f"Indexer {indexer} for entry {entry.indexer_name} is already defined elsewhere."
+            for index in indices:
+                if index in self.indices:
+                    msg = f"Index {index} for entry {entry.indexer_name} is already defined elsewhere."
                     raise IndexerRegistryEntryError(msg)
-                self.indices[indexer] = entry
-            self.indexer_entries[entry.indexer_type]
+                self.indices[index] = entry
+            self.all_indexer_entries[entry.indexer_type] = entry
+
+    def setup_all_indexers(self) -> None:
+        """Setup all indexers in config."""
+        indexers = self._config.indices
+        for indexer in indexers:
+            self.setup_indexer(indexer)
+
+    def setup_indexer(self, entry: BaseIndexerConfigModel) -> RegisteredIndexerRegistryEntry:
+        """Setup a single indexer."""
+        indexer = self._get_unregistered_indexer_for_index(entry.type)
+        if not indexer:
+            msg = f"Could not find indexer for {entry.type}!"
+            raise IndexRegistrationError(msg)
+        indexer_type = indexer.indexer_type
+        if indexer_type in self.registered_indexers:
+            msg = f"Indexer type {indexer_type} is already set up."
+            raise IndexRegistrationError(msg)
+
+        index_already_registered = any(
+            index in self.registered_indicies for index in indexer.indices
+        )
+        if index_already_registered:
+            msg = f"{indexer.indexer_name} uses one or more indices which are already registered (Got {', '.join(indexer.indices)})."
+            raise IndexerRegistryEntryError(msg)
+
+        cls = indexer.indexer_class
+        instance = cls(config=entry, meilisearch_client=self._client)
+
+        dumped = indexer.model_dump()
+        dumped["instance"] = instance
+        model = RegisteredIndexerRegistryEntry.model_validate(dumped)
+
+        self.registered_indexers[entry.type] = model
+        for index in indexer.indices:
+            self.registered_indicies[index] = model
+        return model
+
+    def _get_unregistered_indexer_for_index(self, indexer_type: str) -> IndexerRegistryEntry | None:
+        """Get the unregistered indexer entry for a given indexer type."""
+        return self.all_indexer_entries.get(indexer_type)
+
+    def get_indexer_for_index(self, index: str) -> RegisteredIndexerRegistryEntry | None:
+        """Get the registered indexer entry for a given index."""
+        return self.registered_indicies.get(index)
+
+    def get_indexer_by_type(self, indexer_type: str) -> RegisteredIndexerRegistryEntry | None:
+        """Get the registered indexer entry for a given indexer type."""
+        return self.registered_indexers.get(indexer_type)

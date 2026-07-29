@@ -106,3 +106,12 @@ class IndexerRegistryEntry(
 
     # Names for indices created by entry
     indices: list[str]
+
+
+class RegisteredIndexerRegistryEntry(
+    IndexerRegistryEntry,
+    arbitrary_types_allowed=True,
+):
+    """Model for a registered indexer."""
+
+    instance: object
