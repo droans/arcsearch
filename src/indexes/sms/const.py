@@ -3,6 +3,10 @@
 from enum import Enum, StrEnum
 from pathlib import Path
 
+from src.models.indices import AddDocumentsKwargField, IndexRegistryEntry
+
+from .sms import TextMessageEngine
+
 RCS_CT_CLS = 135
 
 
@@ -58,3 +62,21 @@ ATTACHMENT_DIR = Path(".", "out", "img")
 INDEX_SMS = "sms"
 INDEX_CONVERSATIONS = "sms_conversations"
 INDEX_CONTACTS = "sms_contacts"
+
+ADD_DOCUMENTS_KWARGS = {
+    "messages_xml_path": AddDocumentsKwargField(
+        type=str | Path,
+        example_value="sms-20210101123456.xml",
+        validate_func=lambda path: Path(path).exists(),
+    ),
+}
+REGISTRY_ENTRY = IndexRegistryEntry(
+    index_name="SMS",
+    index_type="sms",
+    index_class=TextMessageEngine,
+    add_documents_kwargs=ADD_DOCUMENTS_KWARGS,
+    indices=[
+        "sms",
+        "sms_conversations",
+    ],
+)

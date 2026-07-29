@@ -1,10 +1,16 @@
 """Text Message Parsers."""
 
+from .const import REGISTRY_ENTRY
 from .contacts import export_contacts, parse_contacts
 from .conversations import ExportSMSConversations
 from .messages import ExportSMSMessages, generate_conversation_id, generate_message_unique_id
+from .models import SMSConfig
+
+INDEX_CONFIG = SMSConfig
 
 __all__ = (
+    "INDEX_CONFIG",
+    "REGISTRY_ENTRY",
     "ExportSMSConversations",
     "ExportSMSMessages",
     "export_contacts",
