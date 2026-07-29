@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from src.models.indices import BaseIndexClass
+
 from . import ExportSMSMessages, export_contacts
 from .const import (
     ATTACHMENT_DIR,
@@ -20,7 +22,7 @@ if TYPE_CHECKING:
     from meilisearch import Client
 
 
-class TextMessageEngine:
+class TextMessageEngine(BaseIndexClass):
     """Engine managing interactions with the sms index and data."""
 
     def __init__(self, config: SMSConfig, meilisearch_client: "Client") -> None:
@@ -28,7 +30,7 @@ class TextMessageEngine:
         self._config = config
         self._meilisearch_client = meilisearch_client
 
-    def create_indices(self) -> None:
+    def create_index(self, **kwargs) -> None:  # noqa: ARG002
         """Create Meilisearch indices."""
         self._meilisearch_client.create_index(INDEX_SMS, {"primaryKey": "timestamp"})
         self._meilisearch_client.create_index(INDEX_CONTACTS, {"primaryKey": "phone_number"})
@@ -69,7 +71,7 @@ class TextMessageEngine:
         sms_idx.update_settings(sms_fk_settings)
         conversations_idx.update_settings(conv_fk_settings)
 
-    def setup_embedder(self) -> None:
+    def setup_embedder(self, **kwargs) -> None:  # noqa: ARG002
         """Setup embedder for sms index."""
         embed_config = self._config.embedder
         embed_settings = {
@@ -119,3 +121,12 @@ class TextMessageEngine:
             contacts_data = json.loads(f.read())
 
         self._meilisearch_client.index(INDEX_CONTACTS).add_documents(contacts_data)
+
+    def add_documents(
+        self,
+        **kwargs,
+    ) -> None:
+        """Class implementation."""
+        messages_xml_path = kwargs.get("messages_xml_path")
+        assert isinstance(messages_xml_path, str)
+        self.import_messages(messages_xml_path)
