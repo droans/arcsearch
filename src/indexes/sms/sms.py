@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from src.indexes.sms import export_contacts, export_messages_and_conversations
-from src.indexes.sms.const import (
+from . import ExportSMSMessages, export_contacts
+from .const import (
     ATTACHMENT_DIR,
     INDEX_CONTACTS,
     INDEX_CONVERSATIONS,
@@ -14,7 +14,7 @@ from src.indexes.sms.const import (
     TMP_CONVERSATIONS_PATH,
     TMP_MESSAGES_PATH,
 )
-from src.models import ConfigModel
+from .models import SMSConfig
 
 if TYPE_CHECKING:
     from meilisearch import Client
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 class TextMessageEngine:
     """Engine managing interactions with the sms index and data."""
 
-    def __init__(self, config: ConfigModel, meilisearch_client: "Client") -> None:
+    def __init__(self, config: SMSConfig, meilisearch_client: "Client") -> None:
         """Initialize class."""
         self._config = config
         self._meilisearch_client = meilisearch_client
@@ -71,7 +71,7 @@ class TextMessageEngine:
 
     def setup_embedder(self) -> None:
         """Setup embedder for sms index."""
-        embed_config = self._config.text_messages.embedder
+        embed_config = self._config.embedder
         embed_settings = {
             embed_config.model_name: {
                 "source": "rest",
@@ -85,22 +85,25 @@ class TextMessageEngine:
         }
         self._meilisearch_client.index(INDEX_SMS).update_embedders(embed_settings)
 
-    def import_messages(self, message_file: str | Path) -> None:
+    def import_messages(
+        self,
+        message_file: str | Path,
+        messages_save_path: str | Path = TMP_MESSAGES_PATH,
+        conversations_save_path: str | Path = TMP_CONVERSATIONS_PATH,
+        attachments_save_path: str | Path = ATTACHMENT_DIR,
+    ) -> None:
         """Import messages into ArcSearch."""
-        sms_config = self._config.text_messages
-        export_messages_and_conversations(
+        exporter = ExportSMSMessages(self._config)
+        exporter.export_messages_and_conversations(
             messages_xml_path=message_file,
-            messages_save_path=TMP_MESSAGES_PATH,
-            conversations_save_path=TMP_CONVERSATIONS_PATH,
-            attachment_save_dir=ATTACHMENT_DIR,
-            personal_phone_number=sms_config.personal_phone_numer,
-            process_content_types=sms_config.save_attachment_types,
-            process_content_type_prefixes=sms_config.save_attachment_type_prefixes,
+            messages_save_path=messages_save_path,
+            conversations_save_path=conversations_save_path,
+            attachment_save_dir=attachments_save_path,
         )
-        with open(TMP_MESSAGES_PATH) as f:
+        with open(messages_save_path) as f:
             msg_data = json.loads(f.read())
 
-        with open(TMP_CONVERSATIONS_PATH) as f:
+        with open(conversations_save_path) as f:
             conv_data = json.loads(f.read())
 
         self._meilisearch_client.index(INDEX_SMS).add_documents(msg_data)
