@@ -48,13 +48,6 @@ class SMSStatus(Enum):
     Failed = 64
 
 
-DEFAULT_PROCESS_CONTENT_TYPES = []
-DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES = [
-    "image",
-    "text",
-    "video",
-    "audio",
-]
 CONTENT_TYPE_MESSAGE = "text/plain"
 
 TMP_CONVERSATIONS_PATH = Path("tmp", "conversations.json")
