@@ -1,8 +1,11 @@
-"""Models related to SMS message parsint."""
+"""Models related to SMS message parsing."""
 
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, BeforeValidator
+
+from src.const import DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES, DEFAULT_PROCESS_CONTENT_TYPES
+from src.models.rag import EmbedderSettings
 
 from .const import AddressType, MessageBox, MessageType, SMSStatus, SMSType
 
@@ -229,3 +232,12 @@ class RCSModel(BaseMessageModel):
 
     type: MessageType = MessageType.RCS
     images: list[MMSAttachmentModel]
+
+
+class SMSConfig(BaseModel):
+    """Model for SMS configuration."""
+
+    embedder: EmbedderSettings
+    save_attachment_types: list[str] = DEFAULT_PROCESS_CONTENT_TYPES
+    save_attachment_type_prefixes: list[str] = DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES
+    personal_phone_numer: str
