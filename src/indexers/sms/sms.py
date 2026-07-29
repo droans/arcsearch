@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 from src.models.indices import BaseIndexerClass
 
-from . import ExportSMSMessages, export_contacts
 from .const import (
     ATTACHMENT_DIR,
     INDEX_CONTACTS,
@@ -16,6 +15,8 @@ from .const import (
     TMP_CONVERSATIONS_PATH,
     TMP_MESSAGES_PATH,
 )
+from .contacts import export_contacts
+from .messages import ExportSMSMessages
 from .models import SMSConfig
 
 if TYPE_CHECKING:
@@ -23,7 +24,7 @@ if TYPE_CHECKING:
 
 
 class TextMessageIndexer(BaseIndexerClass):
-    """Engine managing interactions with the sms index and data."""
+    """Indexer managing interactions with the sms index and data."""
 
     def __init__(self, config: SMSConfig, meilisearch_client: "Client") -> None:
         """Initialize class."""
