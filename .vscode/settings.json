@@ -1,9 +1,3 @@
 {
-    "python.defaultInterpreterPath": ".venv/bin/python",
-    "ty.interpreter": ".venv/bin/python",
-    "ruff.interpreter": [
-        ".venv/bin/python",
-        ".venv/bin/python3",
-        ".venv/bin/python3.13",
-    ]
+    "python.defaultInterpreterPath": "/projects/arcsearch/.venv/bin/python"
 }
