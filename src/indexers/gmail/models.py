@@ -1,9 +1,8 @@
 """GMail Models."""
 
 import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
-from googleapiclient.discovery import Resource
 from pydantic import BaseModel, BeforeValidator, EmailStr, FilePath
 
 from src.models.indices import BaseIndexerConfigModel, BaseMessageWithAttachmentConfig
@@ -206,4 +205,4 @@ class FailedItemModel(BaseModel, arbitrary_types_allowed=True):
 
     reason: str | None = None
     exception: Exception
-    item: GmailMessage | Resource
+    item: Any
