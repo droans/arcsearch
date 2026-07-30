@@ -101,8 +101,8 @@ class EmailModel(BaseModel):
     content_type: str
     sender: EmailContact
     to: list[EmailContact]
-    cc: list[EmailContact]
-    bcc: list[EmailContact]
+    cc: list[EmailContact] = []
+    bcc: list[EmailContact] = []
     subject: str
     body: str
     attachments: list[EmailAttachmentConfig] = []
