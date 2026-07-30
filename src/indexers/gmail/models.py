@@ -66,6 +66,21 @@ class EmailContact(BaseModel):
     name: str | None = None
 
 
+class IndexedEmailContact(EmailContact):
+    """Model for an email contact used in Meilisearch."""
+
+    id: int
+    account_name: str
+
+
+class ConversationModel(BaseModel):
+    """Model used to represent a single email thread."""
+
+    thread_id: str
+    participants: list[EmailContact]
+    account_name: str
+
+
 class EmailAttachmentConfig(BaseModel):
     """Model for an email attachment."""
 
