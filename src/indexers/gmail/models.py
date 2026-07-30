@@ -6,7 +6,6 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, BeforeValidator, EmailStr, FilePath
 
 from src.models.indices import BaseIndexerConfigModel, BaseMessageWithAttachmentConfig
-from src.models.rag import EmbedderSettings
 
 
 def _str_to_list(val: str) -> list[str]:
@@ -47,7 +46,6 @@ class GMailAccountConfig(
 
     credentials_path: FilePath
     account_name: str
-    embedder: EmbedderSettings | None = None
     save_attachment_types: list[str] | None = None
     save_attachment_type_prefixes: list[str] | None = None
 
