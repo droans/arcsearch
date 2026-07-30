@@ -43,7 +43,7 @@ def _create_header_dict(headers: list[GmailMessageHeader]) -> dict[str, str]:
 
 def _process_address(addr: str) -> list[EmailContact]:
     """Process a string representing an address."""
-    parsed = getaddresses([addr])[0]
+    parsed = getaddresses([addr])
     result = []
     for name, email_address in parsed:
         _nm = name
