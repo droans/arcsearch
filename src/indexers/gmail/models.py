@@ -46,7 +46,7 @@ class GMailAccountConfig(
     """Model for the configuration for a single gmail account."""
 
     credentials_path: FilePath
-    account_name: str | None = None
+    account_name: str
     embedder: EmbedderSettings | None = None
     save_attachment_types: list[str] | None = None
     save_attachment_type_prefixes: list[str] | None = None
