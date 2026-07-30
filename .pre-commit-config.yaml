@@ -25,3 +25,11 @@ repos:
     rev: 0.11.18
     hooks:
       - id: uv-lock
+  - repo: local
+    hooks:
+    -   id: git-diff
+        name: git diff
+        entry: git diff --exit-code
+        language: system
+        pass_filenames: false
+        always_run: true
