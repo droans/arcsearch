@@ -179,3 +179,18 @@ class GmailMessage(BaseModel):
     sizeEstimate: int
     raw: bytes | None = None
     classificationLabelValues: GmailClassificationLabelValues | None = None
+
+
+class MessageIdentifier(BaseModel):
+    """Message identifier stub from calling messages.list."""
+
+    id: str
+    threadId: str
+
+
+class ListMessagesResponse(BaseModel):
+    """Model representing the response from calling messages.list."""
+
+    messages: list[MessageIdentifier]
+    nextPageToken: str | None = None
+    resultSizeEstimate: int
