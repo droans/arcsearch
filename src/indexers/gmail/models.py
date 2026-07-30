@@ -8,7 +8,9 @@ from pydantic import BaseModel, BeforeValidator, EmailStr, FilePath
 from src.models.indices import BaseIndexerConfigModel, BaseMessageWithAttachmentConfig
 
 
-def _str_to_list(val: str) -> list[str]:
+def _str_to_list(val: str | list[str]) -> list[str]:
+    if isinstance(val, list):
+        return val
     return [val]
 
 
