@@ -134,8 +134,11 @@ def process_email(message_model: GmailMessage) -> EmailModel:
 
     msg_to = _process_address(headers.get("to", ""))
     msg_from = _process_address(headers.get("from", ""))[0]
-    msg_cc = _process_address(headers.get("cc", ""))
-    msg_bcc = _process_address(headers.get("bcc", ""))
+
+    raw_msg_cc = headers.get("cc", "")
+    raw_msg_bcc = headers.get("bcc", "")
+    msg_cc = _process_address(headers.get("cc", "")) if raw_msg_cc else []
+    msg_bcc = _process_address(headers.get("bcc", "")) if raw_msg_bcc else []
     timestamp = int(int(message_model.internalDate) / 1000)
     msg_id = message_model.id
     thread_id = message_model.threadId
