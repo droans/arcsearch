@@ -1,7 +1,14 @@
 """Utility Functions."""
 
+import datetime
+import json
 import logging
+from pathlib import Path
 
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+
+from src.indexers.gmail.const import DataPaths
 from src.indexers.gmail.models import (
     ConversationModel,
     EmailContact,
@@ -44,14 +51,7 @@ def get_all_contacts(account_name: str, messages: list[EmailModel]) -> list[Inde
     """Create list of all contacts."""
     all_contacts: list[EmailContact] = []
     for message in messages:
-        participants = list(
-            {
-                message.sender,
-                *message.to,
-                *message.cc,
-                *message.bcc,
-            },
-        )
+        participants = [message.sender, *message.to, *message.cc, *message.bcc]
         [
             all_contacts.append(participant)
             for participant in participants
@@ -63,4 +63,58 @@ def get_all_contacts(account_name: str, messages: list[EmailModel]) -> list[Inde
         dumped["id"] = hash(f"{contact.email_address}::{contact.name}")
         dumped["account_name"] = account_name
         result.append(IndexedEmailContact.model_validate(dumped))
+    msg = f"Contacts found: {len(result)}"
+    logger.debug(msg)
     return result
+
+
+def store_account_last_process_timestamp(
+    data_directory: Path,
+    account_name: str,
+    timestamp: int | None = None,
+) -> None:
+    """Store the timestamp for the last time the emails for an account were processed."""
+    if timestamp is None:
+        timestamp = int(datetime.datetime.now().timestamp())
+    path = Path(data_directory, DataPaths.LAST_PROCESS_TS)
+    msg = f"Storing last process timestamp ({timestamp}) for {account_name}."
+    logger.debug(msg)
+    if not path.exists():
+        path.touch()
+        with open(path, "w+") as f:
+            f.write("{}")
+
+    with open(path) as f:
+        data: dict[str, int] = json.loads(f.read())
+    data[account_name] = timestamp
+    with open(path, "w+") as f:
+        f.write(json.dumps(data))
+
+
+def get_account_last_process_datetime(data_directory: Path, account_name: str) -> datetime.datetime:
+    """Retrieve the timestamp for the last time the emails for an account were processed."""
+    path = Path(data_directory, DataPaths.LAST_PROCESS_TS)
+    if not path.exists():
+        path.touch()
+        with open(path, "w") as f:
+            f.write("{}")
+
+    with open(path) as f:
+        data: dict[str, int] = json.loads(f.read())
+    return datetime.datetime.fromtimestamp(data.get(account_name, 0))
+
+
+def get_and_refresh_credentials(
+    credentials_path: Path,
+    save_refreshed_credentials: bool,
+) -> Credentials | None:
+    """Get and update stored credentials."""
+    creds: Credentials = Credentials.from_authorized_user_file(filename=credentials_path)
+    if not creds:
+        return None
+    if creds.expired:
+        creds.refresh(Request())
+        if save_refreshed_credentials:
+            with open(credentials_path, "w") as f:
+                f.write(creds.to_json())
+    return creds
