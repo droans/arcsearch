@@ -45,7 +45,6 @@ class GMailAccountConfig(
 ):
     """Model for the configuration for a single gmail account."""
 
-    type: Literal["gmail"]
     credentials_path: FilePath
     account_name: str | None = None
     embedder: EmbedderSettings | None = None
@@ -56,6 +55,7 @@ class GMailAccountConfig(
 class GMailConfig(BaseMessageWithAttachmentConfig, BaseIndexerConfigModel):
     """Model for gmail configuration."""
 
+    type: Literal["gmail"]
     accounts: list[GMailAccountConfig]
 
 
