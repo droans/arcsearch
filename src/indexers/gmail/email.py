@@ -128,10 +128,8 @@ def _rewrite_cids(html: str, message_id: str, attachments: list[EmailAttachmentC
     return rewritten
 
 
-def process_email(raw_email: dict) -> EmailModel:
+def process_email(message_model: GmailMessage) -> EmailModel:
     """Processes a raw email returned from the gmail API and returns it as a model."""
-    message_model = GmailMessage.model_validate(raw_email)
-
     headers = _create_header_dict(message_model.payload.headers)
 
     msg_to = _process_address(headers.get("to", ""))
