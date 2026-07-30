@@ -103,8 +103,8 @@ class EmailModel(BaseModel):
     to: list[EmailContact]
     cc: list[EmailContact] = []
     bcc: list[EmailContact] = []
-    subject: str
-    body: str
+    subject: str | None = None
+    body: str | None = None
     attachments: list[EmailAttachmentConfig] = []
 
 
