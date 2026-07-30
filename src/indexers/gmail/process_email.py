@@ -1,6 +1,7 @@
 """Process emails."""
 
 import base64
+import contextlib
 import re
 from email.utils import getaddresses
 from typing import TYPE_CHECKING
@@ -157,6 +158,9 @@ def process_email(message_model: GmailMessage) -> EmailModel:
     else:
         content_type = "text/plain"
         body = ""
+
+    with contextlib.suppress(BaseException):
+        body = base64.urlsafe_b64decode(body).decode()
 
     return EmailModel(
         timestamp=timestamp,
