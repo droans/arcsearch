@@ -29,6 +29,7 @@ class EmailFiltersRule(BaseModel):
     cc: StringOrListString | None = None
     bcc: StringOrListString | None = None
     label_ids: list[str] | None = None
+    has_attachment: bool | None = None
 
 
 class EmailFilter(BaseModel):
