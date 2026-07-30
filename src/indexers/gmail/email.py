@@ -66,8 +66,8 @@ def _get_text_charset_from_part(part: GmailMessagePart) -> str | None:
     ct = headers.get("content-type")
     if not ct:
         return None
-    ct_data = ct.split("; ")
-    charset_str = [data for data in ct_data if data.startswith("charset")]
+    ct_data = ct.split(";")
+    charset_str = [data for data in ct_data if data.strip().startswith("charset")]
     if not charset_str:
         return None
     return charset_str[0].split("=")[-1]
