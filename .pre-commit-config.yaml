@@ -1,5 +1,11 @@
 default_install_hook_types: [pre-commit]
 repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.15
+    hooks:
+      - id: ruff-check
+        args: ["--fix"]
+      - id: ruff-format
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -10,12 +16,6 @@ repos:
       - id: detect-private-key
       - id: mixed-line-ending
         args: ["--fix=lf"]
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.15
-    hooks:
-      - id: ruff-check
-        args: ["--fix"]
-      - id: ruff-format
   - repo: https://github.com/astral-sh/ty-pre-commit
     rev: v0.0.49
     hooks:
