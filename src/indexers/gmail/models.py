@@ -48,6 +48,7 @@ class GMailAccountConfig(
     account_name: str
     save_attachment_types: list[str] | None = None
     save_attachment_type_prefixes: list[str] | None = None
+    filters: list[EmailFilter] = []
 
 
 class GMailConfig(BaseMessageWithAttachmentConfig, BaseIndexerConfigModel):
