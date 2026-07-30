@@ -1,14 +1,42 @@
 """GMail Models."""
 
-from typing import TYPE_CHECKING, Literal
+import datetime
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, BeforeValidator, EmailStr, FilePath
 
 from src.models.indices import BaseIndexerConfigModel, BaseMessageWithAttachmentConfig
 from src.models.rag import EmbedderSettings
 
-if TYPE_CHECKING:
-    from pathlib import Path
+
+def _str_to_list(val: str) -> list[str]:
+    return [val]
+
+
+StringOrListString = Annotated[
+    str | list[str],
+    BeforeValidator(_str_to_list),
+]
+
+
+class EmailFiltersRule(BaseModel):
+    """Rule for filtering emails selected."""
+
+    before: datetime.datetime | None = None
+    after: datetime.datetime | None = None
+    sender: StringOrListString | None = None
+    participants: StringOrListString | None = None
+    to: StringOrListString | None = None
+    cc: StringOrListString | None = None
+    bcc: StringOrListString | None = None
+    label_ids: list[str] | None = None
+
+
+class EmailFilter(BaseModel):
+    """Include/Exclude rules for managing emails."""
+
+    include: EmailFiltersRule | None = None
+    exclude: EmailFiltersRule | None = None
 
 
 class GMailAccountConfig(
@@ -18,7 +46,7 @@ class GMailAccountConfig(
     """Model for the configuration for a single gmail account."""
 
     type: Literal["gmail"]
-    credentials_path: "str | Path"
+    credentials_path: FilePath
     account_name: str | None = None
     embedder: EmbedderSettings | None = None
     save_attachment_types: list[str] | None = None
