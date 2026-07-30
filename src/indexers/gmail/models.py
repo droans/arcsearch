@@ -3,6 +3,7 @@
 import datetime
 from typing import Annotated, Literal
 
+from googleapiclient.discovery import Resource
 from pydantic import BaseModel, BeforeValidator, EmailStr, FilePath
 
 from src.models.indices import BaseIndexerConfigModel, BaseMessageWithAttachmentConfig
@@ -198,3 +199,11 @@ class ListMessagesResponse(BaseModel):
     messages: list[MessageIdentifier]
     nextPageToken: str | None = None
     resultSizeEstimate: int
+
+
+class FailedItemModel(BaseModel, arbitrary_types_allowed=True):
+    """Model for a failed email item."""
+
+    reason: str | None = None
+    exception: Exception
+    item: GmailMessage | Resource
