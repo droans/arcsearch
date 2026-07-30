@@ -106,6 +106,7 @@ class EmailModel(BaseModel):
     subject: str | None = None
     body: str | None = None
     attachments: list[EmailAttachmentConfig] = []
+    account_name: str | None = None
 
 
 class GmailClassificationLabelFieldValues(BaseModel):
