@@ -42,16 +42,19 @@ class BaseIndexerClass(ABC):
         """Initialize class."""
 
     @abstractmethod
-    def add_documents(self, **kwargs) -> None:
+    def add_documents(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
         """Add documents to index."""
+        ...
 
     @abstractmethod
-    def create_index(self, **kwargs) -> None:
+    def create_index(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
         """Create index in client."""
+        ...
 
     @abstractmethod
-    def setup_embedder(self, **kwargs) -> None:
+    def setup_embedder(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
         """Function implemented by children."""
+        ...
 
 
 class AddDocumentsKwargField(
@@ -69,7 +72,8 @@ class AddDocumentsKwargField(
     # Example value to display
     example_value: Any = None
 
-    # If True, the default value will always be used and the user will be unable to set it themselves.
+    # If True, the default value will always be used and
+    #  the user will be unable to set it themselves.
     locked: bool = False
 
     # Validator needs to accept any type as the first argument and
