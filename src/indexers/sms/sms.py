@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from src.models.indexers import BaseIndexerClass, RuntimeData
+from src.util.meilisearch import update_index_embedder_config
 
 from .const import (
     ATTACHMENT_DIR,
@@ -37,62 +38,19 @@ class TextMessageIndexer(BaseIndexerClass):
         self._meilisearch_client = meilisearch_client
         self._runtime_data = runtime_data
 
-    def create_index(self, **kwargs) -> None:  # noqa: ARG002
-        """Create Meilisearch indices."""
-        self._meilisearch_client.create_index(INDEX_SMS, {"primaryKey": "timestamp"})
-        self._meilisearch_client.create_index(INDEX_CONTACTS, {"primaryKey": "phone_number"})
-        self._meilisearch_client.create_index(
-            INDEX_CONVERSATIONS,
-            {"primaryKey": "conversation_id"},
-        )
-
-        self._meilisearch_client.update_experimental_features({"foreignKeys": True})
-
-        sms_idx = self._meilisearch_client.index(INDEX_SMS)
-        contacts_idx = self._meilisearch_client.index(INDEX_CONTACTS)
-        conversations_idx = self._meilisearch_client.index(INDEX_CONVERSATIONS)
-
-        # Add filterable attributes
-        sms_idx.update_filterable_attributes(["sender", "conversation_id", "timestamp", "type"])
-        contacts_idx.update_filterable_attributes(["name", "phone_number"])
-        conversations_idx.update_filterable_attributes(["recipients", "conversation_id"])
-        # Add searchable attributes
-
-        # Setup foreign keys
-        sms_fk_settings = {
-            "foreignKeys": [
-                {
-                    "fieldName": "conversation_id",
-                    "foreignIndexUid": "conversations",
-                },
-            ],
-        }
-        conv_fk_settings = {
-            "foreignKeys": [
-                {
-                    "fieldName": "recipients",
-                    "foreignIndexUid": "contacts",
-                },
-            ],
-        }
-        sms_idx.update_settings(sms_fk_settings)
-        conversations_idx.update_settings(conv_fk_settings)
-
     def setup_embedder(self, **kwargs) -> None:  # noqa: ARG002
         """Setup embedder for sms index."""
         embed_config = self._config.embedder
-        embed_settings = {
-            embed_config.model_name: {
-                "source": "rest",
-                "url": embed_config.url,
-                "apiKey": embed_config.api_key,
-                "dimensions": embed_config.dimensions,
-                "request": embed_config.request,
-                "response": embed_config.response,
-                "documentTemplate": embed_config.document_template,
-            },
-        }
-        self._meilisearch_client.index(INDEX_SMS).update_embedders(embed_settings)
+        if embed_config.document_template is None:
+            indices = self._runtime_data.manifest.indices
+            email_conf = next(index for index in indices if index.index_uid == INDEX_SMS)
+            document_template = email_conf.embedder.default_document_template
+            embed_config.document_template = document_template
+
+            update_index_embedder_config(
+                idx=self._meilisearch_client.index(INDEX_SMS),
+                embedder_config=embed_config,
+            )
 
     def import_messages(
         self,

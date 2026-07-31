@@ -12,6 +12,7 @@ from src.indexers.gmail.utils import (
     store_account_last_process_timestamp,
 )
 from src.models.indexers import BaseIndexerClass, RuntimeData
+from src.util.meilisearch import update_index_embedder_config
 
 from .models import (
     ConversationModel,
@@ -133,94 +134,19 @@ class GmailEmailIndexer(BaseIndexerClass):
                 account_name=account_name,
             )
 
-    def setup_embedder(self, **kwargs) -> None:  # noqa: ARG002
+    def setup_embedder(self) -> None:
         """Setup embedder."""
         embed_config = self._config.embedder
-        embed_settings = {
-            embed_config.model_name: {
-                "source": "rest",
-                "url": embed_config.url.encoded_string(),
-                "apiKey": embed_config.api_key,
-                "dimensions": embed_config.dimensions,
-                "request": embed_config.request,
-                "response": embed_config.response,
-                "documentTemplate": embed_config.document_template,
-            },
-        }
-        self._meilisearch_client.index(INDEX_EMAILS).update_embedders(embed_settings)
+        if embed_config.document_template is None:
+            indices = self._runtime_data.manifest.indices
+            email_conf = next(index for index in indices if index.index_uid == INDEX_EMAILS)
+            document_template = email_conf.embedder.default_document_template
+            embed_config.document_template = document_template
 
-    def create_index(self, **kwargs) -> None:  # noqa: ARG002
-        """Create Meilisearch indices."""
-        self._meilisearch_client.create_index(INDEX_EMAILS, options={"primaryKey": "id"})
-        self._meilisearch_client.create_index(INDEX_CONTACTS, options={"primaryKey": "id"})
-        self._meilisearch_client.create_index(INDEX_CONVERSATIONS, options={"primaryKey": "id"})
-        self._meilisearch_client.update_experimental_features({"foreignKeys": True})
-        email_idx = self._meilisearch_client.index(INDEX_EMAILS)
-        contacts_idx = self._meilisearch_client.index(INDEX_CONTACTS)
-        conversations_idx = self._meilisearch_client.index(INDEX_CONVERSATIONS)
-
-        email_idx.update_filterable_attributes(
-            [
-                "thread_id",
-                "label_ids",
-                "mime_type",
-                "sender",
-                "to",
-                "cc",
-                "bcc",
-                "subject",
-                "body",
-                "account_name",
-            ],
-        )
-        contacts_idx.update_filterable_attributes(
-            [
-                "email_address",
-                "name",
-                "account_name",
-            ],
-        )
-        conversations_idx.update_filterable_attributes(
-            [
-                "thread_id",
-                "participants",
-                "account_name",
-            ],
-        )
-        email_fk_settings = {
-            "foreignKeys": [
-                {
-                    "fieldName": "thread_id",
-                    "foreignIndexUid": INDEX_CONVERSATIONS,
-                },
-                {
-                    "fieldName": "sender",
-                    "foreignIndexUid": INDEX_CONTACTS,
-                },
-                {
-                    "fieldName": "to",
-                    "foreignIndexUid": INDEX_CONTACTS,
-                },
-                {
-                    "fieldName": "cc",
-                    "foreignIndexUid": INDEX_CONTACTS,
-                },
-                {
-                    "fieldName": "bcc",
-                    "foreignIndexUid": INDEX_CONTACTS,
-                },
-            ],
-        }
-        conv_fk_settings = {
-            "foreignKeys": [
-                {
-                    "fieldName": "participants",
-                    "foreignIndexUid": INDEX_CONTACTS,
-                },
-            ],
-        }
-        email_idx.update_settings(email_fk_settings)
-        conversations_idx.update_settings(conv_fk_settings)
+            update_index_embedder_config(
+                idx=self._meilisearch_client.index(INDEX_EMAILS),
+                embedder_config=embed_config,
+            )
 
     def _write_to_failed_data_json(self, fail_file_path: Path, data: FailedItemModel) -> None:
         """Record failed email processes to the failed data path."""
