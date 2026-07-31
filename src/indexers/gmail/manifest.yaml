@@ -1,0 +1,106 @@
+indexer:
+  name: GMail
+  description: Index emails from your GMail account(s)
+  type: gmail
+indices:
+  - index_uid: gmail_emails
+    primary_key: id
+    chat:
+      description: "An index of emails from a GMail account."
+      default_document_template: &email-doc-template >-
+        {% assign participants = doc.to | concat: doc.cc.size | concat: doc.bcc %}
+        {% if participants.size > 1 %}A group email{%else%}An email{% endif %}
+        from
+        {{ doc.sender.name}} ({{ doc.sender.email_address }}),
+        '{% if doc.subject %}Subject: {{ doc.subject }}, {% endif %}'
+        {% if doc.attachments.size %}
+            Attachments: \n
+            {% for attachment in doc.attachments %}
+            - {{ attachment.filename }} (MIME: {{ attachment.mime_type}})
+            {% endfor %}
+        {%endif%}
+    embedder:
+      default_document_template: *email-doc-template
+      # chat_parameters:
+      #   semantic_ratio:       # float | None = None
+      #   limit:                # int | None = None
+      #   sort:                 # list[str]
+      #   distinct:             # list[str]
+      #   matching_strategy:    # Literal["last", "all", "frequency"] | None = None
+
+    foreign_keys:
+      - foreign_key_uid: gmail_conversations
+        field_name: thread_id
+      - foreign_key_uid: gmail_contacts
+        field_name: sender
+      - foreign_key_uid: gmail_contacts
+        field_name: to
+      - foreign_key_uid: gmail_contacts
+        field_name: cc
+      - foreign_key_uid: gmail_contacts
+        field_name: bcc
+    attributes:
+      filterable_attributes:
+        - thread_id
+        - label_ids
+        - mime_type
+        - sender
+        - to
+        - cc
+        - bcc
+        - subject
+        - body
+        - account_name
+      # searchable_attributes:
+
+      # sortable_attributes:
+
+      # displayed_attributes:
+
+  - index_uid: gmail_contacts
+    primary_key: phone_number
+    chat:
+      description: "An index of contacts retrieved from GMail emails. Tied to `gmail_emails`."
+      # default_document_template:
+      # chat_parameters:
+        # semantic_ratio: # float | None = None
+        # limit: # int | None = None
+        # sort: # list[str]
+        # distinct: # list[str]
+        # matching_strategy: # Literal["last", "all", "frequency"] | None = None
+    attributes:
+      filterable_attributes:
+        - email_address
+        - name
+        - account_name
+      # searchable_attributes:
+
+      # sortable_attributes:
+
+      # displayed_attributes:
+
+  - index_uid: gmail_conversations
+    primary_key: conversation_id
+    chat:
+      description: "An index of email conversations. Tied to `gmail_emails`"
+      # default_document_template:
+      # chat_parameters:
+        # semantic_ratio: # float | None = None
+        # limit: # int | None = None
+        # sort: # list[str]
+        # distinct: # list[str]
+        # matching_strategy: # Literal["last", "all", "frequency"] | None = None
+
+    foreign_keys:
+      - foreign_key_uid: gmail_contacts
+        field_name: participants
+    attributes:
+      filterable_attributes:
+        - thread_id
+        - participants
+        - account_name
+      # searchable_attributes:
+
+      # sortable_attributes:
+
+      # displayed_attributes:

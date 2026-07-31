@@ -1,0 +1,134 @@
+indexer:
+  name: SMS
+  description: Index text messages from SMS Backup & Restore
+  type: sms
+indices:
+  - index_uid: sms_messages
+    primary_key: timestamp
+    chat:
+      description: "An index of text messages."
+      default_document_template: &sms-doc-template >-
+        {% if doc.direction == "received" %}
+          {% assign sender = "sent" %}
+        {% elsif doc.contact %}
+          {% assign sender = doc.contact %}
+        {% else %}
+          {% assign sender = doc.sender %}
+        {% endif %}
+        {% assign message_type = doc.type | upcase %}
+
+        {% assign message = "A," | split: "," %}
+        {% if doc.recipients.size > 1 %}
+          {% assign message = message | concat: "group" %}
+        {% endif %}
+        {% assign message = message | concat: message_type %}
+        {% if doc.direction == "received" %}
+          {% assign message = message | concat: "sent by me on" %}
+        {% elsif doc.contact %}
+          {% assign message = message | concat: "from" | concat: doc.contact | concat: "received" %}
+        {% else %}
+          {% assign message = message | concat: "from" | concat: doc.sender | concat: "received" %}
+        {% endif %}
+        {% assign message = message | concat: doc.readable_date %}
+
+        {% if doc.message or doc.image.length %}
+          {% assign message = message | concat: "with" %}
+        {% endif %}
+        {% if doc.message %}
+          {% assign msg = doc.message | truncatewords: 50 %}
+          {% assign message = message | concat: "the message" | concat: msg %}
+          {% if doc.images %}
+            {% assign message = message | concat: "and" %}
+          {% endif %}
+        {% endif %}
+        {% if doc.images %}
+          {% assign message = message | concat: "the following attachments:" %}
+          {% for image in doc.images %}
+            {% capture attach_str %}
+              \n- filename: {{image.filename}}, content type: {{image.content_type}}
+            {% endcapture %}
+            {% assign message = message | concat: attach_str %}
+          {% endfor %}
+        {% endif %}
+        {{ message }}
+    embedder:
+      default_document_template: *sms-doc-template
+      # chat_parameters:
+      #   semantic_ratio:       # float | None = None
+      #   limit:                # int | None = None
+      #   sort:                 # list[str]
+      #   distinct:             # list[str]
+      #   matching_strategy:    # Literal["last", "all", "frequency"] | None = None
+
+    foreign_keys:
+      - foreign_key_uid: conversations
+        field_name: conversation_id
+    attributes:
+      filterable_attributes: # list[str] | FilterableAttributesConfig | None = None
+        - sender
+        - conversation_id
+        - timestamp
+        - type
+      # searchable_attributes:    # list[str] | None = None
+
+      # sortable_attributes:      # list[str] | None = None
+
+      # displayed_attributes:     # list[str] | None = None
+
+      # distinct_attribute:       # str | None = None
+
+  - index_uid: sms_contacts
+    primary_key: phone_number
+    chat:
+      description: "An index of contacts retrieved from text messages."
+      default_document_template:
+      chat_parameters:
+        semantic_ratio: # float | None = None
+        limit: # int | None = None
+        sort: # list[str]
+        distinct: # list[str]
+        matching_strategy: # Literal["last", "all", "frequency"] | None = None
+
+    foreign_keys:
+      - foreign_key_uid:
+        field_name:
+    attributes:
+      filterable_attributes: # list[str] | FilterableAttributesConfig | None = None
+        - name
+        - phone_number
+      searchable_attributes: # list[str] | None = None
+
+      sortable_attributes: # list[str] | None = None
+
+      displayed_attributes: # list[str] | None = None
+
+      distinct_attribute: # str | None = None
+    stop_words:
+
+  - index_uid: sms_conversations
+    primary_key: conversation_id
+    chat:
+      description: "An index of conversations. Tied to index `sms_messages`."
+      default_document_template:
+      chat_parameters:
+        semantic_ratio: # float | None = None
+        limit: # int | None = None
+        sort: # list[str]
+        distinct: # list[str]
+        matching_strategy: # Literal["last", "all", "frequency"] | None = None
+
+    foreign_keys:
+      - foreign_key_uid: contacts
+        field_name: recipients
+    attributes:
+      filterable_attributes: # list[str] | FilterableAttributesConfig | None = None
+        - recipients
+        - conversation_id
+      searchable_attributes: # list[str] | None = None
+
+      sortable_attributes: # list[str] | None = None
+
+      displayed_attributes: # list[str] | None = None
+
+      distinct_attribute: # str | None = None
+    stop_words:

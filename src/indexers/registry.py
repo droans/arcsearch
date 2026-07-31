@@ -1,7 +1,6 @@
 """Indexer registration."""
 
 from pathlib import Path
-from typing import cast
 
 from meilisearch import Client
 
@@ -13,11 +12,13 @@ from src.models.indexers import (
     IndexerRegistryEntry,
     RegisteredIndexerRegistryEntry,
 )
+from src.util.meilisearch import create_index, index_exists
 
-from . import sms
+from . import gmail, sms
 
 INDEXER_MODULES = [
     sms,
+    gmail,
 ]
 
 BASE_DATA_DIR = Path("data")
@@ -35,38 +36,38 @@ class IndexerRegistry:
         self._config = config
         self.all_indexer_entries: dict[str, IndexerRegistryEntry] = {}
         self.indices: dict[str, IndexerRegistryEntry] = {}
-        self.registered_indexers: dict[str, RegisteredIndexerRegistryEntry] = {}
-        self.registered_indicies: dict[str, RegisteredIndexerRegistryEntry] = {}
+        self.user_indexers: dict[str, RegisteredIndexerRegistryEntry] = {}
+        self.user_indicies: dict[str, RegisteredIndexerRegistryEntry] = {}
         self._client = meilisearch_client
         self._base_runtime_data = BaseRuntimeData()
 
     def register_indices(self) -> None:
         """Register indices."""
         for module in INDEXER_MODULES:
-            entry = getattr(module, "REGISTRY_ENTRY", None)
+            register_func = getattr(module, "register_indexer", None)
 
-            if not entry:
+            if not register_func:
                 msg = f"No indexer entry found for module at {module.__path__}"
                 raise IndexerRegistryEntryError(msg)
+            entry = register_func()
             if not isinstance(entry, IndexerRegistryEntry):
                 msg = f"Expected indexer entry to be an IndexerRegistryEntry, received {type(entry)}."
                 raise IndexerRegistryEntryError(msg)
 
-            entry = cast("IndexerRegistryEntry", entry)
-            indexer_type = entry.indexer_type
+            indexer_type = entry.manifest.indexer.type
 
             if indexer_type in self.all_indexer_entries:
                 msg = f"Indexer type {indexer_type} is already registered"
                 raise IndexerRegistryEntryError(msg)
 
-            indices = entry.indices
+            indices = entry.manifest.indices
 
             for index in indices:
                 if index in self.indices:
-                    msg = f"Index {index} for entry {entry.indexer_name} is already defined elsewhere."
+                    msg = f"Index {index} for entry {entry.manifest.indexer.name} is already defined elsewhere."
                     raise IndexerRegistryEntryError(msg)
-                self.indices[index] = entry
-            self.all_indexer_entries[entry.indexer_type] = entry
+                self.indices[index.index_uid] = entry
+            self.all_indexer_entries[entry.manifest.indexer.type] = entry
 
     def setup_all_indexers(self) -> None:
         """Setup all indexers in config."""
@@ -80,16 +81,18 @@ class IndexerRegistry:
         if not indexer:
             msg = f"Could not find indexer for {entry.type}!"
             raise IndexRegistrationError(msg)
-        indexer_type = indexer.indexer_type
-        if indexer_type in self.registered_indexers:
+        manifest = indexer.manifest
+        indexer_type = manifest.indexer.type
+        if indexer_type in self.user_indexers:
             msg = f"Indexer type {indexer_type} is already set up."
             raise IndexRegistrationError(msg)
 
-        index_already_registered = any(index in self.registered_indicies for index in indexer.indices)
-        if index_already_registered:
+        index_already_setup = any(index in self.user_indicies for index in manifest.indices)
+        if index_already_setup:
+            indices = [index.index_uid for index in manifest.indices]
             msg = (
-                f"{indexer.indexer_name} uses one or more indices "
-                f"which are already registered (Got {', '.join(indexer.indices)})."
+                f"{manifest.indexer.name} uses one or more index names "
+                f"which are already set up (Got {', '.join(indices)})."
             )
             raise IndexerRegistryEntryError(msg)
 
@@ -103,9 +106,11 @@ class IndexerRegistry:
         dumped["instance"] = instance
         model = RegisteredIndexerRegistryEntry.model_validate(dumped)
 
-        self.registered_indexers[entry.type] = model
-        for index in indexer.indices:
-            self.registered_indicies[index] = model
+        self.user_indexers[entry.type] = model
+        for index in indexer.manifest.indices:
+            self.user_indicies[index.index_uid] = model
+            if not index_exists(client=self._client, index_uid=index.index_uid):
+                create_index(client=self._client, index_config=index)
         return model
 
     def _get_unregistered_indexer_for_index(self, indexer_type: str) -> IndexerRegistryEntry | None:
@@ -113,9 +118,9 @@ class IndexerRegistry:
         return self.all_indexer_entries.get(indexer_type)
 
     def get_indexer_for_index(self, index: str) -> RegisteredIndexerRegistryEntry | None:
-        """Get the registered indexer entry for a given index."""
-        return self.registered_indicies.get(index)
+        """Get the set up indexer entry for a given index."""
+        return self.user_indicies.get(index)
 
     def get_indexer_by_type(self, indexer_type: str) -> RegisteredIndexerRegistryEntry | None:
-        """Get the registered indexer entry for a given indexer type."""
-        return self.registered_indexers.get(indexer_type)
+        """Get the set up indexer entry for a given indexer type."""
+        return self.user_indexers.get(indexer_type)

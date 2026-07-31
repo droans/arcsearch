@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from src.const import DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES, DEFAULT_PROCESS_CONTENT_TYPES
 from src.models.arcsearch import RuntimeData
 
+from .indices.index import IndexConfig
 from .rag import EmbedderSettings
 
 if TYPE_CHECKING:
@@ -69,6 +70,8 @@ class AddDocumentsKwargField(
     # Type for argument
     type: UnionType | type
 
+    description: str | None = None
+
     # Default value to use
     default_value: Any = None
 
@@ -84,35 +87,45 @@ class AddDocumentsKwargField(
     validate_func: Callable[[Any], bool] | None = None
 
 
+class IndexerManifestIndexerConfig(BaseModel):
+    """Model for indexer section of indexer config."""
+
+    # Name of indexer
+    name: str
+    # Description of indexer
+    description: str
+
+    # Unique type for indexer, used when defining in user configs
+    type: str
+
+    # Support options
+    supports_adding_documents: bool = True
+    supports_creating_indices: bool = True
+    supports_embedding: bool = True
+
+
+class IndexerManifest(BaseModel):
+    """Model for the indexer manifest file."""
+
+    indexer: IndexerManifestIndexerConfig
+    indices: list[IndexConfig]
+
+
 class IndexerRegistryEntry(
     BaseModel,
     arbitrary_types_allowed=True,
 ):
     """Model for registering an indexer and its class."""
 
-    # Name used for indexer
-    indexer_name: str
-
-    # Key identifying indexer type
-    indexer_type: str
-
+    manifest: IndexerManifest
     # Class used to manage indexer
     indexer_class: Type[BaseIndexerClass]  # noqa: UP006
 
     # Arguments to pass when adding documents
     add_documents_kwargs: dict[str, AddDocumentsKwargField] = {}
 
-    # Whether the indexer supports adding documents
-    supports_adding_documents: bool = True
-
-    # Whether the indexer supports creating indices
-    supports_creating_indices: bool = True
-
-    # Whether the indexer supports embedding
-    supports_embedding: bool = True
-
-    # Names for indices created by entry
-    indices: list[str]
+    # Configuration schema for users setting up the indexer
+    config_schema: type[BaseModel]
 
 
 class RegisteredIndexerRegistryEntry(
