@@ -18,3 +18,7 @@ DATA_DIRECTORIES = (
     DataPaths.PROCESSING_PATH,
     DataPaths.METADATA_PATH,
 )
+
+INDEX_EMAILS = "gmail_emails"
+INDEX_CONTACTS = "gmail_contacts"
+INDEX_CONVERSATIONS = "gmail_conversations"

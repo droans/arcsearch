@@ -14,6 +14,7 @@ from src.indexers.gmail.utils import (
 from src.models.indexers import BaseIndexerClass, RuntimeData
 from src.util.meilisearch import update_index_embedder_config
 
+from .const import INDEX_CONTACTS, INDEX_CONVERSATIONS, INDEX_EMAILS
 from .models import (
     ConversationModel,
     EmailFilter,
@@ -27,9 +28,6 @@ from .models import (
 if TYPE_CHECKING:
     from meilisearch import Client
 
-INDEX_EMAILS = "gmail_emails"
-INDEX_CONTACTS = "gmail_contacts"
-INDEX_CONVERSATIONS = "gmail_conversations"
 
 logger = logging.getLogger(__name__)
 
