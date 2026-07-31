@@ -89,13 +89,13 @@ class GmailEmailIndexer(BaseIndexerClass):
             [conversation.model_dump() for conversation in conversations],
         )
 
-    def add_documents(self, **kwargs) -> None:
+    def add_documents(
+        self,
+        account_names: list[str] | str | None = None,
+        filters: list[EmailFilter] | None = None,
+        reprocess: bool = False,
+    ) -> None:
         """Import messages interface."""
-        _filters = kwargs.get("filters")
-        if _filters is not None:
-            _filters = [EmailFilter.model_validate(_filter) for _filter in _filters]
-        reprocess: bool = kwargs.get("reprocess", False)
-        account_names: str | list[str] | None = kwargs.get("account_names")
         if not account_names:
             account_names = [account.account_name for account in self._config.accounts]
         if isinstance(account_names, str):
@@ -106,7 +106,7 @@ class GmailEmailIndexer(BaseIndexerClass):
             messages = self._gmail_client.retrieve_all_messages_for_account(
                 account_name=account_name,
                 reprocess=reprocess,
-                _filters=_filters,
+                _filters=filters,
             )
             msg = f"Found {len(messages)} messages."
             logger.info(msg)
