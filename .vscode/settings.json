@@ -1,3 +1,13 @@
 {
-    "python.defaultInterpreterPath": "/projects/arcsearch/.venv/bin/python"
+  "python.defaultInterpreterPath": "/projects/arcsearch/.venv/bin/python",
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
+  "ty.configurationFile": "src/ty.toml",
+  "ruff.lineLength": 120
 }
