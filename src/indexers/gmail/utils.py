@@ -12,6 +12,7 @@ from src.indexers.gmail.const import DataPaths
 from src.indexers.gmail.models import (
     ConversationModel,
     EmailContact,
+    EmailFilter,
     EmailModel,
     IndexedEmailContact,
 )
@@ -91,8 +92,13 @@ def store_account_last_process_timestamp(
         f.write(json.dumps(data))
 
 
-def get_account_last_process_datetime(data_directory: Path, account_name: str) -> datetime.datetime:
-    """Retrieve the timestamp for the last time the emails for an account were processed."""
+def get_last_process_datetime_for_account_and_filters(
+    data_directory: Path,
+    account_name: str,
+    filters: EmailFilter | None,
+) -> datetime.datetime:
+    """Retrieve the latest processing time for the given account and filters."""
+    filter_id = filters.unique_id if filters else None
     path = Path(data_directory, DataPaths.LAST_PROCESS_TS)
     if not path.exists():
         path.touch()
@@ -100,8 +106,11 @@ def get_account_last_process_datetime(data_directory: Path, account_name: str) -
             f.write("{}")
 
     with open(path) as f:
-        data: dict[str, int] = json.loads(f.read())
-    return datetime.datetime.fromtimestamp(data.get(account_name, 0))
+        data: dict[str, dict[str, int]] = json.loads(f.read())
+
+    account_data = data.get(account_name, {})
+    filter_ts = account_data.get(filter_id, 0)
+    return datetime.datetime.fromtimestamp(filter_ts)
 
 
 def get_and_refresh_credentials(

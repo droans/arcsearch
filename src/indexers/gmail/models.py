@@ -37,6 +37,7 @@ class EmailFiltersRule(BaseModel):
 class EmailFilter(BaseModel):
     """Include/Exclude rules for managing emails."""
 
+    unique_id: str
     include: EmailFiltersRule | None = None
     exclude: EmailFiltersRule | None = None
 

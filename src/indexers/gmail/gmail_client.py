@@ -21,7 +21,9 @@ from src.indexers.gmail.models import (
     ListMessagesResponse,
 )
 from src.indexers.gmail.process_email import process_email
-from src.indexers.gmail.utils import get_account_last_process_datetime
+from src.indexers.gmail.utils import (
+    get_last_process_datetime_for_account_and_filters,
+)
 
 if TYPE_CHECKING:
     from googleapiclient._apis.gmail.v1.resources import GmailResource
@@ -87,16 +89,17 @@ class GmailClient:
         If `reprocess` is True, this function will only use the filters.
         """
         if not reprocess:
-            latest_ts = get_account_last_process_datetime(
+            if _filter is None:
+                _filter = EmailFilter(unique_id="auto")
+            if _filter.include is None:
+                _filter.include = EmailFiltersRule()
+            latest_ts = get_last_process_datetime_for_account_and_filters(
                 data_directory=self._runtime_data.data_directory,
                 account_name=account_name,
+                filters=_filter,
             )
             msg = f"Not set to reprocess; using latest timestamp of {latest_ts}."
             logger.debug(msg)
-            if _filter is None:
-                _filter = EmailFilter()
-            if _filter.include is None:
-                _filter.include = EmailFiltersRule()
             _filter.include.after = (
                 max(_filter.include.after, latest_ts) if _filter.include.after else latest_ts
             )
