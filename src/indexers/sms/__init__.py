@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from src.models.indices import AddDocumentsKwargField, IndexerRegistryEntry
+from src.models.indexers import AddDocumentsKwargField, IndexerRegistryEntry
 
 from .contacts import export_contacts, parse_contacts
 from .conversations import ExportSMSConversations

@@ -6,7 +6,7 @@ from meilisearch import Client
 
 from src.exceptions import IndexerRegistryEntryError, IndexRegistrationError
 from src.models import ConfigModel
-from src.models.indices import (
+from src.models.indexers import (
     BaseIndexerConfigModel,
     IndexerRegistryEntry,
     RegisteredIndexerRegistryEntry,
@@ -44,9 +44,7 @@ class IndexerRegistry:
                 msg = f"No indexer entry found for module at {module.__path__}"
                 raise IndexerRegistryEntryError(msg)
             if not isinstance(entry, IndexerRegistryEntry):
-                msg = (
-                    f"Expected indexer entry to be an IndexerRegistryEntry, received {type(entry)}."
-                )
+                msg = f"Expected indexer entry to be an IndexerRegistryEntry, received {type(entry)}."
                 raise IndexerRegistryEntryError(msg)
 
             entry = cast("IndexerRegistryEntry", entry)
@@ -82,11 +80,12 @@ class IndexerRegistry:
             msg = f"Indexer type {indexer_type} is already set up."
             raise IndexRegistrationError(msg)
 
-        index_already_registered = any(
-            index in self.registered_indicies for index in indexer.indices
-        )
+        index_already_registered = any(index in self.registered_indicies for index in indexer.indices)
         if index_already_registered:
-            msg = f"{indexer.indexer_name} uses one or more indices which are already registered (Got {', '.join(indexer.indices)})."
+            msg = (
+                f"{indexer.indexer_name} uses one or more indices "
+                f"which are already registered (Got {', '.join(indexer.indices)})."
+            )
             raise IndexerRegistryEntryError(msg)
 
         cls = indexer.indexer_class

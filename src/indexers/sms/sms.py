@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from src.models.indices import BaseIndexerClass
+from src.models.indexers import BaseIndexerClass
 
 from .const import (
     ATTACHMENT_DIR,

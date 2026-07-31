@@ -12,7 +12,7 @@ from src.indexers.gmail.utils import (
     store_account_last_process_timestamp,
 )
 from src.models.arcsearch import RuntimeData
-from src.models.indices import BaseIndexerClass
+from src.models.indexers import BaseIndexerClass
 
 from .models import (
     ConversationModel,
@@ -51,9 +51,7 @@ class GmailEmailIndexer(BaseIndexerClass):
 
     def get_account_by_name(self, account_name: str) -> GMailAccountConfig | None:
         """Get an account by the account name."""
-        account_ls = [
-            account for account in self._config.accounts if account.account_name == account_name
-        ]
+        account_ls = [account for account in self._config.accounts if account.account_name == account_name]
         if account_ls:
             return account_ls[0]
         return None

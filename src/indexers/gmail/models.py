@@ -5,7 +5,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, BeforeValidator, EmailStr, FilePath
 
-from src.models.indices import BaseIndexerConfigModel, BaseMessageWithAttachmentConfig
+from src.models.indexers import BaseIndexerConfigModel, BaseMessageWithAttachmentConfig
 
 
 def _str_to_list(val: str | list[str]) -> list[str]:

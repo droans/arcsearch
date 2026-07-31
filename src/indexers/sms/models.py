@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, BeforeValidator
 
-from src.models.indices import BaseIndexerConfigModel, BaseMessageWithAttachmentConfig
+from src.models.indexers import BaseIndexerConfigModel, BaseMessageWithAttachmentConfig
 
 from .const import AddressType, MessageBox, MessageType, SMSStatus, SMSType
 
