@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from src.models.arcsearch import RuntimeData
 from src.models.indexers import BaseIndexerClass
 
 from .const import (
@@ -26,10 +27,16 @@ if TYPE_CHECKING:
 class TextMessageIndexer(BaseIndexerClass):
     """Indexer managing interactions with the sms index and data."""
 
-    def __init__(self, config: SMSConfig, meilisearch_client: "Client") -> None:
+    def __init__(
+        self,
+        runtime_data: RuntimeData,
+        config: SMSConfig,
+        meilisearch_client: "Client",
+    ) -> None:
         """Initialize class."""
         self._config = config
         self._meilisearch_client = meilisearch_client
+        self._runtime_data = runtime_data
 
     def create_index(self, **kwargs) -> None:  # noqa: ARG002
         """Create Meilisearch indices."""

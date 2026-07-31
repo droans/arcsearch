@@ -7,7 +7,9 @@ from typing import TYPE_CHECKING, Any, Callable, Type  # noqa: UP035
 from pydantic import BaseModel
 
 from src.const import DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES, DEFAULT_PROCESS_CONTENT_TYPES
-from src.models.rag import EmbedderSettings
+from src.models.arcsearch import RuntimeData
+
+from .rag import EmbedderSettings
 
 if TYPE_CHECKING:
     from meilisearch import Client
@@ -36,6 +38,7 @@ class BaseIndexerClass(ABC):
     @abstractmethod
     def __init__(
         self,
+        runtime_data: RuntimeData,
         config: BaseIndexerConfigModel,
         meilisearch_client: "Client",
     ) -> None:

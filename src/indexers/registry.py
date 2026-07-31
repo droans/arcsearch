@@ -1,11 +1,13 @@
 """Indexer registration."""
 
+from pathlib import Path
 from typing import cast
 
 from meilisearch import Client
 
 from src.exceptions import IndexerRegistryEntryError, IndexRegistrationError
 from src.models import ConfigModel
+from src.models.arcsearch import BaseRuntimeData, RuntimeData
 from src.models.indexers import (
     BaseIndexerConfigModel,
     IndexerRegistryEntry,
@@ -17,6 +19,8 @@ from . import sms
 INDEXER_MODULES = [
     sms,
 ]
+
+BASE_DATA_DIR = Path("data")
 
 
 class IndexerRegistry:
@@ -34,6 +38,7 @@ class IndexerRegistry:
         self.registered_indexers: dict[str, RegisteredIndexerRegistryEntry] = {}
         self.registered_indicies: dict[str, RegisteredIndexerRegistryEntry] = {}
         self._client = meilisearch_client
+        self._base_runtime_data = BaseRuntimeData()
 
     def register_indices(self) -> None:
         """Register indices."""
@@ -89,7 +94,10 @@ class IndexerRegistry:
             raise IndexerRegistryEntryError(msg)
 
         cls = indexer.indexer_class
-        instance = cls(config=entry, meilisearch_client=self._client)
+        base_runtime_data = self._base_runtime_data.model_dump()
+        base_runtime_data["data_directory"] = BASE_DATA_DIR.joinpath(indexer_type)
+        runtime_data = RuntimeData.model_validate(base_runtime_data)
+        instance = cls(runtime_data=runtime_data, config=entry, meilisearch_client=self._client)
 
         dumped = indexer.model_dump()
         dumped["instance"] = instance
