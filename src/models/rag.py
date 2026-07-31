@@ -14,7 +14,7 @@ class EmbedderSettings(BaseModel):
     # See https://www.meilisearch.com/docs/capabilities/hybrid_search/how_to/configure_rest_embedder
     request: dict
     response: dict
-    document_template: str
+    document_template: str | None = None
 
 
 class MeilisearchConfig(BaseModel):
