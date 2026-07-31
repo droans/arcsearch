@@ -8,7 +8,7 @@ from pathlib import Path
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 
-from src.indexers.gmail.const import DataPaths
+from src.indexers.gmail.const import DATA_DIRECTORIES, DataPaths
 from src.indexers.gmail.models import (
     ConversationModel,
     EmailContact,
@@ -53,11 +53,7 @@ def get_all_contacts(account_name: str, messages: list[EmailModel]) -> list[Inde
     all_contacts: list[EmailContact] = []
     for message in messages:
         participants = [message.sender, *message.to, *message.cc, *message.bcc]
-        [
-            all_contacts.append(participant)
-            for participant in participants
-            if participant not in all_contacts
-        ]
+        [all_contacts.append(participant) for participant in participants if participant not in all_contacts]
     result = []
     for contact in all_contacts:
         dumped = contact.model_dump()
@@ -127,3 +123,13 @@ def get_and_refresh_credentials(
             with open(credentials_path, "w") as f:
                 f.write(creds.to_json())
     return creds
+
+
+def create_data_directories_if_necessary(base_data_directory: Path) -> None:
+    """Create the initial data directory folders if they do not exist."""
+    if not base_data_directory.exists():
+        base_data_directory.mkdir()
+    for path in DATA_DIRECTORIES:
+        full_path = base_data_directory.joinpath(path)
+        if not full_path.exists():
+            full_path.mkdir(parents=True)
