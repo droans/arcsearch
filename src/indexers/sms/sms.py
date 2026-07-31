@@ -4,8 +4,7 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from src.models.arcsearch import RuntimeData
-from src.models.indexers import BaseIndexerClass
+from src.models.indexers import BaseIndexerClass, RuntimeData
 
 from .const import (
     ATTACHMENT_DIR,

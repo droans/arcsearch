@@ -11,8 +11,7 @@ from src.indexers.gmail.utils import (
     get_all_conversations,
     store_account_last_process_timestamp,
 )
-from src.models.arcsearch import RuntimeData
-from src.models.indexers import BaseIndexerClass
+from src.models.indexers import BaseIndexerClass, RuntimeData
 
 from .models import (
     ConversationModel,

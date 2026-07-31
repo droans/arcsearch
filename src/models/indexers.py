@@ -1,13 +1,13 @@
 """Models for indexer configuration."""
 
 from abc import ABC, abstractmethod
+from pathlib import Path
 from types import UnionType
 from typing import TYPE_CHECKING, Any, Callable, Type  # noqa: UP035
 
 from pydantic import BaseModel
 
 from src.const import DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES, DEFAULT_PROCESS_CONTENT_TYPES
-from src.models.arcsearch import RuntimeData
 
 from .indices.index import IndexConfig
 from .rag import EmbedderSettings
@@ -39,7 +39,7 @@ class BaseIndexerClass(ABC):
     @abstractmethod
     def __init__(
         self,
-        runtime_data: RuntimeData,
+        runtime_data: "RuntimeData",
         config: BaseIndexerConfigModel,
         meilisearch_client: "Client",
     ) -> None:
@@ -135,3 +135,14 @@ class RegisteredIndexerRegistryEntry(
     """Model for a registered indexer."""
 
     instance: object
+
+
+class BaseRuntimeData(BaseModel):
+    """Base model for runtime data."""
+
+
+class RuntimeData(BaseModel):
+    """Runtime data model, passed to indexers."""
+
+    data_directory: Path
+    manifest: IndexerManifest

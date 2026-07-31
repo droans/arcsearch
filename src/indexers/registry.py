@@ -6,11 +6,12 @@ from meilisearch import Client
 
 from src.exceptions import IndexerRegistryEntryError, IndexRegistrationError
 from src.models import ConfigModel
-from src.models.arcsearch import BaseRuntimeData, RuntimeData
 from src.models.indexers import (
     BaseIndexerConfigModel,
+    BaseRuntimeData,
     IndexerRegistryEntry,
     RegisteredIndexerRegistryEntry,
+    RuntimeData,
 )
 from src.util.meilisearch import create_index, index_exists
 

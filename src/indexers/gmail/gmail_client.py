@@ -34,7 +34,7 @@ if TYPE_CHECKING:
         GMailConfig,
         MessageIdentifier,
     )
-    from src.models.arcsearch import RuntimeData
+    from src.models.indexers import RuntimeData
 
 logger = logging.getLogger(__name__)
 
@@ -100,9 +100,7 @@ class GmailClient:
             )
             msg = f"Not set to reprocess; using latest timestamp of {latest_ts}."
             logger.debug(msg)
-            _filter.include.after = (
-                max(_filter.include.after, latest_ts) if _filter.include.after else latest_ts
-            )
+            _filter.include.after = max(_filter.include.after, latest_ts) if _filter.include.after else latest_ts
         qry_filters = create_filter_string(_filter) if _filter else None
         if qry_filters:
             msg = f'Final query string: "{qry_filters}"'
@@ -134,10 +132,7 @@ class GmailClient:
         """
         next_page_token = None
         result: list[MessageIdentifier] = []
-        msg = (
-            f"Retrieving messages for {account_name}"
-            f" using filters [{_filter.model_dump()}] (Reprocess: {reprocess})"
-        )
+        msg = f"Retrieving messages for {account_name} using filters [{_filter.model_dump()}] (Reprocess: {reprocess})"
         logger.debug(msg)
         while True:
             tmp = self.get_message_data_page(
