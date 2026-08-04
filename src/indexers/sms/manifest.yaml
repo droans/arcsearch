@@ -2,6 +2,10 @@ indexer:
   name: SMS
   description: Index text messages from SMS Backup & Restore
   domain: sms
+  supported_features:
+    - add_documents
+    - create_indices
+    - embeddings
 indices:
   - index_uid: sms_messages
     primary_key: timestamp

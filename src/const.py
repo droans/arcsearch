@@ -1,5 +1,7 @@
 """Constants."""
 
+from enum import StrEnum
+
 DEFAULT_PROCESS_CONTENT_TYPES = []
 DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES = [
     "image",
@@ -43,3 +45,28 @@ DEFAULT_STOP_WORDS = [
     "will",
     "with",
 ]
+
+
+class IndexerRegistrationStatus(StrEnum):
+    """Registration statuses."""
+
+    NOT_LOADED = "not_loaded"
+    IN_PROGRESS = "in_progress"
+    SETUP_ERROR = "setup_error"
+    LOADED = "loaded"
+
+
+class IndexSetupStatus(StrEnum):
+    """Status for setting up an index."""
+
+    OK = "ok"
+    ALREADY_EXISTS = "already_exists"
+    INVALID_INDEX_PREFIX_FOR_DOMAIN = "invalid_index_prefix_for_domain"
+
+
+class IndexEmbedderSetupStatus(StrEnum):
+    """Status for setting up an index embedder."""
+
+    OK = "ok"
+    ALREADY_SETUP = "already_setup"
+    INVALID_INDEX_PREFIX_FOR_DOMAIN = "invalid_index_prefix_for_domain"

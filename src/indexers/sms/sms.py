@@ -2,9 +2,9 @@
 
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING
 
-from src.models.indexers import BaseIndexerClass, RuntimeData
+from src.models.arcsearch import AppModel, RuntimeData
+from src.models.indexers import BaseIndexerClass
 from src.util.meilisearch import update_index_embedder_config
 
 from .const import (
@@ -20,35 +20,32 @@ from .contacts import export_contacts
 from .messages import ExportSMSMessages
 from .models import SMSConfig
 
-if TYPE_CHECKING:
-    from meilisearch import Client
-
 
 class TextMessageIndexer(BaseIndexerClass):
     """Indexer managing interactions with the sms index and data."""
 
     def __init__(
         self,
+        app: AppModel,
         runtime_data: RuntimeData,
-        config: SMSConfig,
-        meilisearch_client: "Client",
     ) -> None:
         """Initialize class."""
-        self._config = config
-        self._meilisearch_client = meilisearch_client
-        self._runtime_data = runtime_data
+        self.app = app
+        self.runtime_data = runtime_data
 
     def setup_embedder(self, **kwargs) -> None:  # noqa: ARG002
         """Setup embedder for sms index."""
-        embed_config = self._config.embedder
+        assert isinstance(self.runtime_data.config, SMSConfig)
+        embed_config = self.runtime_data.config.embedder
         if embed_config.document_template is None:
-            indices = self._runtime_data.manifest.indices
+            indices = self.runtime_data.manifest.indices
             email_conf = next(index for index in indices if index.index_uid == INDEX_SMS)
+            assert email_conf.embedder
             document_template = email_conf.embedder.default_document_template
             embed_config.document_template = document_template
 
             update_index_embedder_config(
-                idx=self._meilisearch_client.index(INDEX_SMS),
+                idx=self.app.meilisearch_client.index(INDEX_SMS),
                 embedder_config=embed_config,
             )
 
@@ -60,7 +57,8 @@ class TextMessageIndexer(BaseIndexerClass):
         attachments_save_path: str | Path = ATTACHMENT_DIR,
     ) -> None:
         """Import messages into ArcSearch."""
-        exporter = ExportSMSMessages(self._config)
+        assert isinstance(self.runtime_data.config, SMSConfig)
+        exporter = ExportSMSMessages(self.runtime_data.config)
         exporter.export_messages_and_conversations(
             messages_xml_path=message_file,
             messages_save_path=messages_save_path,
@@ -73,8 +71,8 @@ class TextMessageIndexer(BaseIndexerClass):
         with open(conversations_save_path) as f:
             conv_data = json.loads(f.read())
 
-        self._meilisearch_client.index(INDEX_SMS).add_documents(msg_data)
-        self._meilisearch_client.index(INDEX_CONVERSATIONS).add_documents(conv_data)
+        self.app.meilisearch_client.index(INDEX_SMS).add_documents(msg_data)
+        self.app.meilisearch_client.index(INDEX_CONVERSATIONS).add_documents(conv_data)
 
     def import_contacts(self, contacts_file: str | Path) -> None:
         """Import contacts into ArcSearch."""
@@ -85,7 +83,7 @@ class TextMessageIndexer(BaseIndexerClass):
         with open(TMP_CONTACTS_PATH) as f:
             contacts_data = json.loads(f.read())
 
-        self._meilisearch_client.index(INDEX_CONTACTS).add_documents(contacts_data)
+        self.app.meilisearch_client.index(INDEX_CONTACTS).add_documents(contacts_data)
 
     def add_documents(
         self,

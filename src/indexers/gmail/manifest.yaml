@@ -2,6 +2,10 @@ indexer:
   name: GMail
   description: Index emails from your GMail account(s)
   domain: gmail
+  supported_features:
+    - add_documents
+    - create_indices
+    - embeddings
 indices:
   - index_uid: gmail_emails
     primary_key: id

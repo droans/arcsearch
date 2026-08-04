@@ -1,16 +1,29 @@
 """ArcSearch models."""
 
+from collections.abc import Callable
 from pathlib import Path
 from types import UnionType
-from typing import Any, Callable, Type  # noqa: UP035
+from typing import Any
 
+from fastapi import FastAPI
+from meilisearch import Client
 from pydantic import BaseModel
 
-from src.models.indexers import BaseIndexerClass, IndexerManifest
+from src.const import IndexerRegistrationStatus
+from src.models import ConfigModel
+from src.models.indexers import BaseIndexerConfigModel, IndexerManifest
 
 
 class BaseRuntimeData(BaseModel):
     """Base model for runtime data."""
+
+
+class AppModel(BaseModel, arbitrary_types_allowed=True):
+    """Model for the app."""
+
+    app: FastAPI
+    config: ConfigModel
+    meilisearch_client: Client
 
 
 class RuntimeData(BaseModel):
@@ -18,6 +31,7 @@ class RuntimeData(BaseModel):
 
     data_directory: Path
     manifest: IndexerManifest
+    config: BaseIndexerConfigModel | None = None
 
 
 class AddDocumentsKwargField(
@@ -46,27 +60,8 @@ class AddDocumentsKwargField(
     validate_func: Callable[[Any], bool] | None = None
 
 
-class IndexerRegistryEntry(
-    BaseModel,
-    arbitrary_types_allowed=True,
-):
-    """Model for registering an indexer and its class."""
+class SetupIndexerEntry(BaseModel):
+    """Entry for a setup indexer, retrieved from running module.setup_indexer."""
 
-    manifest: IndexerManifest
-    # Class used to manage indexer
-    indexer_class: Type[BaseIndexerClass]  # noqa: UP006
-
-    # Arguments to pass when adding documents
-    add_documents_kwargs: dict[str, AddDocumentsKwargField] = {}
-
-    # Configuration schema for users setting up the indexer
-    config_schema: type[BaseModel]
-
-
-class RegisteredIndexerRegistryEntry(
-    IndexerRegistryEntry,
-    arbitrary_types_allowed=True,
-):
-    """Model for a registered indexer."""
-
-    instance: object
+    status: IndexerRegistrationStatus
+    instance: object | None = None

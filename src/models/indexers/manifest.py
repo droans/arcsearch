@@ -1,8 +1,19 @@
 """Model for indexer manifest."""
 
+from enum import StrEnum
+from pathlib import Path
+
 from pydantic import BaseModel
 
 from src.models.indices import IndexConfig
+
+
+class IndexerFeature(StrEnum):
+    """Supported indexer features."""
+
+    ADD_DOCUMENTS = "add_documents"
+    CREATE_INDICES = "create_indices"
+    EMBEDDING = "embeddings"
 
 
 class IndexerManifestIndexerConfig(BaseModel):
@@ -19,9 +30,7 @@ class IndexerManifestIndexerConfig(BaseModel):
     system_requirements: list[str] = []
 
     # Support options
-    supports_adding_documents: bool = True
-    supports_creating_indices: bool = True
-    supports_embedding: bool = True
+    supported_features: list[IndexerFeature]
 
 
 class IndexerManifest(BaseModel):
@@ -29,3 +38,11 @@ class IndexerManifest(BaseModel):
 
     indexer: IndexerManifestIndexerConfig
     indices: list[IndexConfig]
+    module_path: Path
+    module_name: str
+
+
+class RegisteredManifest(IndexerManifest, arbitrary_types_allowed=True):
+    """Model for a registered indexer manifest."""
+
+    instance: object | None = None

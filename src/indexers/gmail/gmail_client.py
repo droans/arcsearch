@@ -17,6 +17,7 @@ from src.indexers.gmail.models import (
     EmailFilter,
     EmailFiltersRule,
     FailedItemModel,
+    GMailConfig,
     GmailMessage,
     ListMessagesResponse,
 )
@@ -31,10 +32,9 @@ if TYPE_CHECKING:
     from src.indexers.gmail.models import (
         EmailModel,
         GMailAccountConfig,
-        GMailConfig,
         MessageIdentifier,
     )
-    from src.models.indexers import RuntimeData
+    from src.models.arcsearch import AppModel, RuntimeData
 
 logger = logging.getLogger(__name__)
 
@@ -44,12 +44,12 @@ class GmailClient:
 
     def __init__(
         self,
+        app: AppModel,
         runtime_data: RuntimeData,
-        config: GMailConfig,
     ) -> None:
         """Initialize class."""
-        self._runtime_data = runtime_data
-        self._config = config
+        self.runtime_data = runtime_data
+        self.app = app
 
     def _create_client(self, account_name: str) -> GmailResource | None:
         """Create client for account."""
@@ -68,7 +68,8 @@ class GmailClient:
 
     def get_account_by_name(self, account_name: str) -> GMailAccountConfig | None:
         """Get an account by the account name."""
-        accounts = self._config.accounts
+        assert isinstance(self.runtime_data.config, GMailConfig)
+        accounts = self.runtime_data.config.accounts
         for account in accounts:
             if account.account_name == account_name:
                 return account
@@ -94,7 +95,7 @@ class GmailClient:
             if _filter.include is None:
                 _filter.include = EmailFiltersRule()
             latest_ts = get_last_process_datetime_for_account_and_filters(
-                data_directory=self._runtime_data.data_directory,
+                data_directory=self.runtime_data.data_directory,
                 account_name=account_name,
                 filters=_filter,
             )
@@ -268,7 +269,7 @@ class GmailClient:
 
     def _get_or_create_failed_data_json(self, fail_file_path: Path) -> Path:
         """Get or create the file for storing a failed message log."""
-        path = Path(self._runtime_data.data_directory, fail_file_path)
+        path = Path(self.runtime_data.data_directory, fail_file_path)
         if not path.exists():
             path.touch()
             with open(path, "w") as f:
