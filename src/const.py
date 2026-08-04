@@ -3,6 +3,7 @@
 from enum import StrEnum
 from pathlib import Path
 
+CONFIG_PATH = Path(".", "config.yaml")
 BASE_DATA_DIR = Path("data")
 SAVE_FILE_DIR = BASE_DATA_DIR.joinpath("files")
 
