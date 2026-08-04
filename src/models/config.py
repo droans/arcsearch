@@ -19,4 +19,4 @@ class ConfigModel(BaseModel):
 
     api: APIConfig
     meilisearch: MeilisearchConfig
-    indices: list[BaseIndexerConfigModel]
+    indexers: list[BaseIndexerConfigModel]
