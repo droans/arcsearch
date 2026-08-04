@@ -5,6 +5,7 @@ from pathlib import Path
 
 import magic
 
+from src.const import SAVE_FILE_PATH
 from src.models.arcsearch import IndexFileModel
 from src.models.indexers import IndexerManifest
 
@@ -25,14 +26,14 @@ def save_file(original_file_name: str | Path, data: str | bytes) -> IndexFileMod
     if not suffix:
         mime = magic.from_buffer(data, mime=True)
         suffix = mime.split("/")[-1]
-    fname = f"{uuid.uuid4()}.{suffix}"
+    fname = Path(SAVE_FILE_PATH, f"{uuid.uuid4()}.{suffix}")
 
     open_mode = "wb" if isinstance(data, bytes) else "w"
     with open(fname, open_mode) as f:
         f.write(data)
 
     return IndexFileModel(
-        file_name=fname,
+        file_name=fname.as_posix(),
         content_type=content_type,
-        src=fname,
+        src=fname.as_posix(),
     )
