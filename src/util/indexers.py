@@ -1,11 +1,11 @@
 """Utility functions for indexers."""
 
-import uuid
+import os
 from pathlib import Path
 
 import magic
 
-from src.const import SAVE_FILE_PATH
+from src.const import ATTACHMENT_ENDPOINT, SAVE_FILE_PATH
 from src.models.arcsearch import IndexFileModel
 from src.models.indexers import IndexerManifest
 
@@ -17,24 +17,31 @@ def load_index_manifest(manifest_path: Path | str) -> IndexerManifest:
     return IndexerManifest.model_validate_json(data)
 
 
-def save_file(original_file_name: str | Path, data: str | bytes) -> IndexFileModel:
-    """Save down a single file."""
-    if not isinstance(original_file_name, Path):
-        original_file_name = Path(original_file_name)
-    suffix = original_file_name.suffix
+def attachment_exists(file_name: str) -> bool | IndexFileModel:
+    """Check if attachment already exists."""
+    files = os.listdir(SAVE_FILE_PATH)  # noqa: PTH208
+    fp = Path(file_name)
+    if not fp.suffix:
+        split_files = (file.split(".") for file in files)
+        return any(file for file in split_files if file[0] == file_name)
+    return any(file for file in files if file == file_name)
+
+
+def save_attachment(unique_id: str, data: str | bytes) -> IndexFileModel:
+    """Save down a single attachment."""
     content_type = magic.from_buffer(data)
-    if not suffix:
-        mime = magic.from_buffer(data, mime=True)
-        suffix = mime.split("/")[-1]
-    fname = Path(SAVE_FILE_PATH, f"{uuid.uuid4()}.{suffix}")
+    mime = magic.from_buffer(data, mime=True)
+    suffix = mime.split("/")[-1]
+    fname = f"{unique_id}.{suffix}"
     if not SAVE_FILE_PATH.exists():
         SAVE_FILE_PATH.mkdir()
-    open_mode = "wb" if isinstance(data, bytes) else "w"
-    with open(fname, open_mode) as f:
-        f.write(data)
-
+    file_path = SAVE_FILE_PATH.joinpath(fname)
+    if not file_path.exists():
+        open_mode = "wb" if isinstance(data, bytes) else "w"
+        with open(fname, open_mode) as f:
+            f.write(data)
     return IndexFileModel(
-        file_name=fname.as_posix(),
+        file_name=fname,
         content_type=content_type,
-        src=fname.as_posix(),
+        src=f"{ATTACHMENT_ENDPOINT}/{fname}",
     )

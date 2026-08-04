@@ -26,7 +26,7 @@ from src.indexers.gmail.process_email import fetch_attachment, process_email
 from src.indexers.gmail.utils import (
     get_last_process_datetime_for_account_and_filters,
 )
-from src.util.indexers import save_file
+from src.util.indexers import save_attachment
 
 if TYPE_CHECKING:
     from googleapiclient._apis.gmail.v1.resources import GmailResource
@@ -286,13 +286,10 @@ class GmailClient:
     ) -> IndexFileModel:
         """Download a single attachment."""
         client = self._create_client(account_name=account_name)
-        assert client is not None
+        assert client
         attachment = fetch_attachment(
             client=client,
             message_id=message_id,
             attachment_id=attachment_config.attachment_id,
         )
-        return save_file(
-            original_file_name=attachment_config.filename,
-            data=attachment,
-        )
+        return save_attachment(unique_id=attachment_config.attachment_id, data=attachment)
