@@ -18,8 +18,8 @@ class IndexConfig(BaseModel):
 
     index_uid: str
     primary_key: str
-    embedder: IndexEmbedderConfig
-    chat: IndexChatConfig
+    embedder: IndexEmbedderConfig | None = None
+    chat: IndexChatConfig | None = None
     foreign_keys: list[IndexAttributesForeignKeyConfig] | None = None
     attributes: IndexAttributesConfig
     stop_words: list[str] = DEFAULT_STOP_WORDS

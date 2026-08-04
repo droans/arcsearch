@@ -1,7 +1,7 @@
 indexer:
   name: GMail
   description: Index emails from your GMail account(s)
-  type: gmail
+  domain: gmail
 indices:
   - index_uid: gmail_emails
     primary_key: id

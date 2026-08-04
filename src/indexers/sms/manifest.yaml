@@ -1,7 +1,7 @@
 indexer:
   name: SMS
   description: Index text messages from SMS Backup & Restore
-  type: sms
+  domain: sms
 indices:
   - index_uid: sms_messages
     primary_key: timestamp
@@ -81,7 +81,7 @@ indices:
     primary_key: phone_number
     chat:
       description: "An index of contacts retrieved from text messages."
-      default_document_template:
+      # default_document_template:
       chat_parameters:
         semantic_ratio: # float | None = None
         limit: # int | None = None
@@ -89,9 +89,9 @@ indices:
         distinct: # list[str]
         matching_strategy: # Literal["last", "all", "frequency"] | None = None
 
-    foreign_keys:
-      - foreign_key_uid:
-        field_name:
+    # foreign_keys:
+    #   - foreign_key_uid:
+    #     field_name:
     attributes:
       filterable_attributes: # list[str] | FilterableAttributesConfig | None = None
         - name
@@ -103,13 +103,13 @@ indices:
       displayed_attributes: # list[str] | None = None
 
       distinct_attribute: # str | None = None
-    stop_words:
+    # stop_words:
 
   - index_uid: sms_conversations
     primary_key: conversation_id
     chat:
       description: "An index of conversations. Tied to index `sms_messages`."
-      default_document_template:
+      # default_document_template:
       chat_parameters:
         semantic_ratio: # float | None = None
         limit: # int | None = None
@@ -131,4 +131,4 @@ indices:
       displayed_attributes: # list[str] | None = None
 
       distinct_attribute: # str | None = None
-    stop_words:
+    # stop_words:

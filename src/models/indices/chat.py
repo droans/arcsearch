@@ -21,5 +21,5 @@ class IndexChatConfig(BaseModel):
     """Model for the chat config for an index."""
 
     description: str
-    default_document_template: str
+    default_document_template: str | None = None
     search_parameters: IndexChatSearchParametersConfig | None = None
