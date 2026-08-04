@@ -14,6 +14,7 @@ from googleapiclient.discovery import build
 from src.indexers.gmail.const import DataPaths
 from src.indexers.gmail.filter_email_data_list import create_filter_string
 from src.indexers.gmail.models import (
+    EmailAttachmentConfig,
     EmailFilter,
     EmailFiltersRule,
     FailedItemModel,
@@ -21,10 +22,11 @@ from src.indexers.gmail.models import (
     GmailMessage,
     ListMessagesResponse,
 )
-from src.indexers.gmail.process_email import process_email
+from src.indexers.gmail.process_email import fetch_attachment, process_email
 from src.indexers.gmail.utils import (
     get_last_process_datetime_for_account_and_filters,
 )
+from src.util.indexers import save_file
 
 if TYPE_CHECKING:
     from googleapiclient._apis.gmail.v1.resources import GmailResource
@@ -34,7 +36,7 @@ if TYPE_CHECKING:
         GMailAccountConfig,
         MessageIdentifier,
     )
-    from src.models.arcsearch import AppModel, RuntimeData
+    from src.models.arcsearch import AppModel, IndexFileModel, RuntimeData
 
 logger = logging.getLogger(__name__)
 
@@ -275,3 +277,22 @@ class GmailClient:
             with open(path, "w") as f:
                 f.write("[]")
         return path
+
+    def download_attachment(
+        self,
+        account_name: str,
+        message_id: str,
+        attachment_config: EmailAttachmentConfig,
+    ) -> IndexFileModel:
+        """Download a single attachment."""
+        client = self._create_client(account_name=account_name)
+        assert client is not None
+        attachment = fetch_attachment(
+            client=client,
+            message_id=message_id,
+            attachment_id=attachment_config.attachment_id,
+        )
+        return save_file(
+            file_path=attachment_config.filename,
+            data=attachment,
+        )

@@ -4,6 +4,7 @@ from enum import StrEnum
 from pathlib import Path
 
 BASE_DATA_DIR = Path("data")
+SAVE_FILE_DIR = BASE_DATA_DIR.joinpath("files")
 
 DEFAULT_PROCESS_CONTENT_TYPES = []
 DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES = [
