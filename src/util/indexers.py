@@ -27,7 +27,8 @@ def save_file(original_file_name: str | Path, data: str | bytes) -> IndexFileMod
         mime = magic.from_buffer(data, mime=True)
         suffix = mime.split("/")[-1]
     fname = Path(SAVE_FILE_PATH, f"{uuid.uuid4()}.{suffix}")
-
+    if not SAVE_FILE_PATH.exists():
+        SAVE_FILE_PATH.mkdir()
     open_mode = "wb" if isinstance(data, bytes) else "w"
     with open(fname, open_mode) as f:
         f.write(data)
