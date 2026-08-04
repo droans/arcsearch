@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from . import BaseIndexerConfigModel
+from .config_entry import BaseIndexerConfigModel
 
 if TYPE_CHECKING:
     from meilisearch import Client
