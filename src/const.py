@@ -1,6 +1,9 @@
 """Constants."""
 
 from enum import StrEnum
+from pathlib import Path
+
+BASE_DATA_DIR = Path("data")
 
 DEFAULT_PROCESS_CONTENT_TYPES = []
 DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES = [

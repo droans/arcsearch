@@ -1,9 +1,8 @@
 """Indexer registry."""
 
 import importlib
-from pathlib import Path
 
-from src.const import IndexEmbedderSetupStatus, IndexerRegistrationStatus, IndexSetupStatus
+from src.const import BASE_DATA_DIR, IndexEmbedderSetupStatus, IndexerRegistrationStatus, IndexSetupStatus
 from src.core.util.indexer import compare_embedder_settings, get_configs_for_index_embedders
 from src.exceptions import IndexRegistrationError
 from src.indexers import get_all_manifests
@@ -13,8 +12,6 @@ from src.models.indexers.manifest import RegisteredManifest
 from src.models.indices import IndexConfig
 from src.models.rag import EmbedderSettings
 from src.util.meilisearch import create_index, index_exists, update_index_embedder_config
-
-BASE_DATA_DIR = Path("data")
 
 
 class IndexerRegistry:
