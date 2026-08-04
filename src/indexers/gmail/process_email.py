@@ -182,7 +182,7 @@ def process_email(message_model: GmailMessage) -> EmailModel:
 def fetch_attachment(
     client: "GmailResource",
     message_id: str,
-    attachment: EmailAttachmentConfig,
+    attachment_id: str,
 ) -> bytes:
     """Download an attachment and return the bytes."""
     resp = (
@@ -192,7 +192,7 @@ def fetch_attachment(
         .get(
             userId="me",
             messageId=message_id,
-            id=attachment.attachment_id,
+            id=attachment_id,
         )
         .execute()
     )
