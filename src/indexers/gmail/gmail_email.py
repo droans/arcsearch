@@ -12,7 +12,8 @@ from src.indexers.gmail.utils import (
     get_all_conversations,
     store_account_last_process_timestamp,
 )
-from src.models.indexers import BaseIndexerClass, RuntimeData
+from src.models.arcsearch import AppModel, RuntimeData
+from src.models.indexers import BaseIndexerClass
 
 from .models import (
     EmailFilter,
@@ -33,24 +34,27 @@ class GmailEmailIndexer(BaseIndexerClass):
 
     def __init__(
         self,
+        app: AppModel,
         runtime_data: RuntimeData,
-        config: GMailConfig,
         meilisearch_client: "Client",
     ) -> None:
         """Initialize class."""
-        self._runtime_data = runtime_data
-        self._config = config
-        self._meilisearch_client = meilisearch_client
-        self._index_client = GMailIndexer(
+        self.app = app
+        self.runtime_data = runtime_data
+        self.meilisearch_client = meilisearch_client
+        config = runtime_data.config
+        assert isinstance(config, GMailConfig)
+        self.config = config
+        self.index_client = GMailIndexer(
+            app=app,
             runtime_data=runtime_data,
-            config=config,
             meilisearch_client=meilisearch_client,
         )
-        self._gmail_client = GmailClient(runtime_data=runtime_data, config=config)
+        self._gmail_client = GmailClient(app=app, runtime_data=runtime_data)
 
     def get_account_by_name(self, account_name: str) -> GMailAccountConfig | None:
         """Get an account by the account name."""
-        account_ls = [account for account in self._config.accounts if account.account_name == account_name]
+        account_ls = [account for account in self.config.accounts if account.account_name == account_name]
         if account_ls:
             return account_ls[0]
         return None
@@ -63,7 +67,7 @@ class GmailEmailIndexer(BaseIndexerClass):
     ) -> None:
         """Import messages interface."""
         if not account_names:
-            account_names = [account.account_name for account in self._config.accounts]
+            account_names = [account.account_name for account in self.config.accounts]
         if isinstance(account_names, str):
             account_names = [account_names]
         for account_name in account_names:
@@ -80,22 +84,22 @@ class GmailEmailIndexer(BaseIndexerClass):
             contacts = get_all_contacts(account_name=account_name, messages=messages)
 
             logger.debug("Importing all messages.")
-            self._index_client.import_messages_to_meilisearch(account_name=account_name, messages=messages)
+            self.index_client.import_messages_to_meilisearch(account_name=account_name, messages=messages)
             logger.debug("Imported all messages.")
 
             logger.debug("Importing all conversations.")
-            self._index_client.import_conversations_to_meilisearch(
+            self.index_client.import_conversations_to_meilisearch(
                 account_name=account_name,
                 conversations=conversations,
             )
             logger.debug("Imported all conversations.")
 
             logger.debug("Importing all contacts.")
-            self._index_client.import_contacts_to_meilisearch(account_name=account_name, contacts=contacts)
+            self.index_client.import_contacts_to_meilisearch(account_name=account_name, contacts=contacts)
             logger.debug("Imported all contacts.")
 
             store_account_last_process_timestamp(
-                data_directory=self._runtime_data.data_directory,
+                data_directory=self.runtime_data.data_directory,
                 account_name=account_name,
             )
 
@@ -113,7 +117,7 @@ class GmailEmailIndexer(BaseIndexerClass):
 
     def _get_or_create_failed_data_json(self, fail_file_path: Path) -> Path:
         """Get or create the file for storing a failed message log."""
-        path = Path(self._runtime_data.data_directory, fail_file_path)
+        path = Path(self.runtime_data.data_directory, fail_file_path)
         if not path.exists():
             path.touch()
             with open(path, "w") as f:
