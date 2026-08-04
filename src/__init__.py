@@ -2,6 +2,8 @@
 
 import logging
 
+import src.core.main
+
 handler = logging.FileHandler("parse.log", "w")
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
@@ -9,3 +11,6 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[handler],
 )
+
+# Start ArcSearch
+src.core.main.serve_arcsearch()
