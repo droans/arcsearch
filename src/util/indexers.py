@@ -16,11 +16,11 @@ def load_index_manifest(manifest_path: Path | str) -> IndexerManifest:
     return IndexerManifest.model_validate_json(data)
 
 
-def save_file(file_path: str | Path, data: str | bytes) -> IndexFileModel:
+def save_file(original_file_name: str | Path, data: str | bytes) -> IndexFileModel:
     """Save down a single file."""
-    if not isinstance(file_path, Path):
-        file_path = Path(file_path)
-    suffix = file_path.suffix
+    if not isinstance(original_file_name, Path):
+        original_file_name = Path(original_file_name)
+    suffix = original_file_name.suffix
     content_type = magic.from_buffer(data)
     if not suffix:
         mime = magic.from_buffer(data, mime=True)

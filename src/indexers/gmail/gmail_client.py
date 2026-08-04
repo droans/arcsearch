@@ -293,6 +293,6 @@ class GmailClient:
             attachment_id=attachment_config.attachment_id,
         )
         return save_file(
-            file_path=attachment_config.filename,
+            original_file_name=attachment_config.filename,
             data=attachment,
         )
