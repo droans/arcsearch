@@ -1,16 +1,14 @@
 """Utility functions for Meilisearch."""
 
-from typing import TYPE_CHECKING, Literal
+from typing import Any, Literal
 
+from meilisearch import Client
 from meilisearch.index import Index
 
 from src.models.indices.attributes import IndexAttributesForeignKeyConfig
 from src.models.indices.chat import IndexChatConfig
 from src.models.indices.index import IndexConfig
-from src.models.rag import EmbedderSettings
-
-if TYPE_CHECKING:
-    from meilisearch import Client
+from src.models.rag import EmbedderSettings, MeilisearchConfig
 
 
 def index_exists(client: "Client", index_uid: str) -> bool:
@@ -156,3 +154,14 @@ def create_index(client: "Client", index_config: IndexConfig) -> None:
         update_index_displayed_attributes(idx, attrs.displayed_attributes)
     if attrs.distinct_attribute:
         update_index_distinct_attributes(idx, attrs.distinct_attribute)
+
+
+def create_client_from_config(config: MeilisearchConfig) -> "Client":
+    """Create a Meilisearch client from the config."""
+    kwargs: dict[str, Any] = {}
+    if config.api_key:
+        kwargs["api_key"] = config.api_key.get_secret_value()
+    return Client(
+        url=config.url.unicode_string(),
+        **kwargs,
+    )
