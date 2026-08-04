@@ -1,0 +1,147 @@
+indexer:
+  name: Google Contacts
+  description: Add Google Contacts to connect the contact names and info between indices
+  domain: gcontacts
+  supported_features:
+    - add_documents
+    - create_indices
+    - embeddings
+indices:
+  - index_uid: gcontacts_contact
+    primary_key: resource_name
+    foreign_keys:
+      - foreign_key_uid: gcontacts_email_addresses
+        field_name: resource_name
+      - foreign_key_uid: gcontacts_names
+        field_name: resource_name
+      - foreign_key_uid: gcontacts_nicknames
+        field_name: resource_name
+      - foreign_key_uid: gcontacts_phone_numbers
+        field_name: resource_name
+      - foreign_key_uid: gcontacts_photos
+        field_name: resource_name
+      - foreign_key_uid: gcontacts_urls
+        field_name: resource_name
+    chat:
+      description: "An index of contacts retrieved from GMail emails. Tied to `gmail_emails`."
+
+  - index_uid: gcontacts_email_addresses
+    primary_key: unique_id
+    foreign_keys:
+      - foreign_key_uid: gcontacts_contact
+        field_name: resource_name
+    chat:
+      description: "Email addresses for Google Contacts. Tied to `gcontacts_contact`"
+    attributes:
+      filterable_attributes:
+        - value
+        - type
+      searchable_attributes:
+        - value
+        - type
+      sortable_attributes:
+        - value
+        - type
+      displayed_attributes:
+        - value
+        - type
+
+  - index_uid: gcontacts_names
+    primary_key: unique_id
+    foreign_keys:
+      - foreign_key_uid: gcontacts_contact
+        field_name: resource_name
+    chat:
+      description: "Names for Google Contacts. Tied to `gcontacts_contact`"
+    attributes:
+      filterable_attributes:
+        - display_name
+        - family_name
+        - unstructured_name
+      searchable_attributes:
+        - unstructured_name
+      sortable_attributes:
+        - display_name
+        - family_name
+        - last_first_name
+      displayed_attributes:
+        - display_name
+
+  - index_uid: gcontacts_nicknames
+    primary_key: unique_id
+    foreign_keys:
+      - foreign_key_uid: gcontacts_contact
+        field_name: resource_name
+    chat:
+      description: "Nicknames for Google Contacts. Tied to `gcontacts_contact`"
+    attributes:
+      filterable_attributes:
+        - nickname
+      searchable_attributes:
+        - nickname
+      sortable_attributes:
+        - nickname
+      displayed_attributes:
+        - nickname
+
+  - index_uid: gcontacts_phone_numbers
+    primary_key: unique_id
+    foreign_keys:
+      - foreign_key_uid: gcontacts_contact
+        field_name: resource_name
+    chat:
+      description: "Phone Numbers for Google Contacts. Tied to `gcontacts_contact`"
+    attributes:
+      filterable_attributes:
+        - value
+        - type
+      searchable_attributes:
+        - value
+        - canonical
+        - type
+      sortable_attributes:
+        - value
+        - canonical
+        - type
+      displayed_attributes:
+        - value
+        - type
+
+  - index_uid: gcontacts_photos
+    primary_key: unique_id
+    foreign_keys:
+      - foreign_key_uid: gcontacts_contact
+        field_name: resource_name
+    chat:
+      description: "Photos for Google Contacts. Tied to `gcontacts_contact`"
+    attributes:
+      filterable_attributes:
+        - url
+        - default
+      searchable_attributes:
+        - url
+      sortable_attributes:
+        - url
+      displayed_attributes:
+        - url
+
+  - index_uid: gcontacts_urls
+    primary_key: unique_id
+    foreign_keys:
+      - foreign_key_uid: gcontacts_contact
+        field_name: resource_name
+    chat:
+      description: "URLs for Google Contacts. Tied to `gcontacts_contact`"
+    attributes:
+      filterable_attributes:
+        - value
+        - type
+      searchable_attributes:
+        - value
+        - type
+      sortable_attributes:
+        - value
+        - type
+      displayed_attributes:
+        - value
+        - type

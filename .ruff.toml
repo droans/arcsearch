@@ -47,6 +47,9 @@ max-complexity = 25
 "src/indexers/gmail/models.py" = [
     "N815"
 ]
+"src/indexers/gcontacts/models/**.py" = [
+    "N815"
+]
 "src/indexers/**.py" = [
     "ANN003", # Missing type annotation for **kw
 ]
