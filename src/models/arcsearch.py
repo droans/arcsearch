@@ -65,3 +65,11 @@ class SetupIndexerEntry(BaseModel):
 
     status: IndexerRegistrationStatus
     instance: object | None = None
+
+
+class IndexFileModel(BaseModel):
+    """Model representing a single index file."""
+
+    file_name: str
+    content_type: str
+    src: str
