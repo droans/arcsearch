@@ -5,8 +5,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from uvicorn import Config, Server
 
+from src.const import ATTACHMENT_ENDPOINT, SAVE_FILE_PATH
 from src.core.registry.indexer import IndexerRegistry
 from src.models import ConfigModel
 from src.models.arcsearch import AppModel
@@ -35,6 +37,7 @@ class ArcSearch:
     def start(self) -> None:
         """Start ArcSearch."""
         self._indexer_registry.register_manifests()
+        self.setup_indexers()
         app = self.app.fastapi_app
         api_conf = self.app.config.api
         loop = asyncio.new_event_loop()
@@ -45,6 +48,10 @@ class ArcSearch:
             port=api_conf.port,
         )
         server = Server(config=uvicorn_config)
+        app.mount(
+            path=ATTACHMENT_ENDPOINT,
+            app=StaticFiles(directory=SAVE_FILE_PATH),
+        )
         loop.run_until_complete(server.serve())
 
     def setup_indexers(self) -> None:
