@@ -136,7 +136,8 @@ def create_index(client: "Client", index_config: IndexConfig) -> None:
 
     client.create_index(index_config.index_uid, options={"primaryKey": primary_key})
     idx = client.get_index(index_config.index_uid)
-    update_index_chat_config(idx, index_config.chat)
+    if index_config.chat:
+        update_index_chat_config(idx, index_config.chat)
 
     if index_config.foreign_keys:
         update_index_foreign_keys(idx, index_config.foreign_keys)
