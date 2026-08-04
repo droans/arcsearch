@@ -2,7 +2,7 @@
 
 import importlib
 
-from src.const import BASE_DATA_DIR, IndexEmbedderSetupStatus, IndexerRegistrationStatus, IndexSetupStatus
+from src.const import BASE_DATA_PATH, IndexEmbedderSetupStatus, IndexerRegistrationStatus, IndexSetupStatus
 from src.core.util.indexer import compare_embedder_settings, get_configs_for_index_embedders
 from src.exceptions import IndexRegistrationError
 from src.indexers import get_all_manifests
@@ -50,7 +50,7 @@ class IndexerRegistry:
         module = importlib.import_module(manifest.module_name)
 
         # Create data directory
-        data_dir = BASE_DATA_DIR.joinpath(manifest.indexer.domain)
+        data_dir = BASE_DATA_PATH.joinpath(manifest.indexer.domain)
         if not data_dir.exists():
             data_dir.mkdir()
 

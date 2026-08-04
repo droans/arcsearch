@@ -4,8 +4,8 @@ from enum import StrEnum
 from pathlib import Path
 
 CONFIG_PATH = Path(".", "config.yaml")
-BASE_DATA_DIR = Path("data")
-SAVE_FILE_DIR = BASE_DATA_DIR.joinpath("files")
+BASE_DATA_PATH = Path("data")
+SAVE_FILE_PATH = BASE_DATA_PATH.joinpath("files")
 
 DEFAULT_PROCESS_CONTENT_TYPES = []
 DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES = [
