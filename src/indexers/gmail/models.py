@@ -5,7 +5,9 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, BeforeValidator, EmailStr, FilePath
 
-from src.models.indexers import BaseIndexerConfigModel, BaseMessageWithAttachmentConfig
+from src.const import DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES, DEFAULT_PROCESS_CONTENT_TYPES
+from src.models.indexers import BaseIndexerConfigModel
+from src.models.rag import EmbedderSettings
 
 
 def _str_to_list(val: str | list[str]) -> list[str]:
@@ -55,11 +57,14 @@ class GMailAccountConfig(
     filters: list[EmailFilter] = []
 
 
-class GMailConfig(BaseMessageWithAttachmentConfig, BaseIndexerConfigModel):
+class GMailConfig(BaseIndexerConfigModel):
     """Model for gmail configuration."""
 
     type: Literal["gmail"]
     accounts: list[GMailAccountConfig]
+    embedder: EmbedderSettings
+    save_attachment_types: list[str] = DEFAULT_PROCESS_CONTENT_TYPES
+    save_attachment_type_prefixes: list[str] = DEFAULT_PROCESS_CONTENT_TYPE_PREFIXES
 
 
 class EmailContact(BaseModel):
