@@ -21,7 +21,7 @@ class BaseRuntimeData(BaseModel):
 class AppModel(BaseModel, arbitrary_types_allowed=True):
     """Model for the app."""
 
-    app: FastAPI
+    fastapi_app: FastAPI
     config: ConfigModel
     meilisearch_client: Client
 
